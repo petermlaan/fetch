@@ -12,27 +12,23 @@
 <body>
 
     <head>
-        <h1>Min anime</h1>
+        <h1>Mina Anime</h1>
     </head>
 
     <main>
-        <form id="frmTop">
+        <form id="frmSearch">
             <input id="txtQuery" type="search" required />
             <input id="btnSearch" type="button" value="Sök" />
-            <label for="selPerPage">Bilder per sida:</label>
-            <select id="selPerPage">
-                <option>10</option>
-                <option>20</option>
-                <option>30</option>
-            </select>
             <input id="btnPrevPage" type="button" value="Föreg sida" />
             <input id="btnNextPage" type="button" value="Nästa sida" />
             <input id="btnMyAnimes" type="button" value="Mina anime" />
+            <label for="chkFilterWatched">Dölj sedda</label>
+            <input type="checkbox" id="chkFilterWatched">
         </form>
+        <section id="secCards"></section>
     </main>
 
     <footer>
-
     </footer>
 
 </body>

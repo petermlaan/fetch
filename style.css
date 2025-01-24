@@ -1,0 +1,33 @@
+html {
+    background-color: #024;
+    color: #adf;
+}
+
+h1 {
+    text-align: center;
+}
+
+#frmSearch {
+    width: max-content;
+    margin: 0 auto;
+}
+
+#secCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 320px);
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+
+    .anime-card {
+        background-color: #047;
+        border: 1px solid #8cf;
+        padding: 10px;
+
+        .poster {
+            width: 300px;
+            height: 450px;
+            object-fit: cover;
+        }
+    }
+}
