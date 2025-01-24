@@ -3,8 +3,57 @@ html {
     color: #adf;
 }
 
-h1 {
-    text-align: center;
+body {
+    margin: 0;
+}
+
+header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    justify-content: start;
+
+    .logo {
+        display: flex;
+        align-items: center;
+
+        img {
+            width: 60px;
+            margin: 0 1rem;
+        }
+    }
+
+    #topmenu {
+        height: 100%;
+
+        ul {
+            height: 100%;
+            display: flex;
+            list-style: none;
+            margin: 0;
+
+            li {
+                height: 100%;
+                display: flex;
+
+                a {
+                    font-size: large;
+                    font-weight: bold;
+                    height: 100%;
+                    padding: 0 20px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                &:hover {
+                    background-color: #fff;
+
+                    a {
+                        color: #000;
+                    }
+                }
+            }
+        }
+    }
 }
 
 #frmSearch {

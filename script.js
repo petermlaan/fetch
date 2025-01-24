@@ -9,17 +9,35 @@ let gFilterWatched = false;
 let gPage = 1;
 let gQuery = "";
 
+// +++ Global html elements
+const hTxtQuery = document.querySelector("#txtQuery");
+const hBtnSearch = document.querySelector("#btnSearch");
+const hBtnNext = document.querySelector("#btnNextPage");
+const hBtnPrev = document.querySelector("#btnPrevPage");
+const hChkFilterWatched = document.querySelector("#chkFilterWatched");
+const hLblFilterWatched = document.querySelector("#lblFilterWatched");
+
 // +++ Event handlers
-document.querySelector("#btnSearch").addEventListener("click", onSearch);
-document.querySelector("#btnNextPage").addEventListener("click", onNextPage);
-document.querySelector("#btnPrevPage").addEventListener("click", onPrevPage);
-document.querySelector("#btnMyAnimes").addEventListener("click", onMyAnimes);
-document.querySelector("#chkFilterWatched").addEventListener("click", onFilterWatched);
+hBtnSearch.addEventListener("click", onSearch);
+hBtnNext.addEventListener("click", onNextPage);
+hChkFilterWatched.addEventListener("click", onFilterWatched);
+document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
+document.querySelector("#mnuCards").addEventListener("click", onCardsTab);
+document.querySelector("#mnuList").addEventListener("click", onListTab);
+document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 
 storage2model();
 showMyAnime();
 
 // +++ Event listeners
+function onSearchTab(e) {
+    e.preventDefault();
+    showSearchElements(true);
+}
+function onListTab(e) {
+    e.preventDefault();
+    showList();
+}
 async function onSearch(e) {
     e.preventDefault();
     gPage = 1;
@@ -44,7 +62,7 @@ async function onPrevPage(e) {
         searchAnime();
     }
 }
-function onMyAnimes(e) {
+function onCardsTab(e) {
     showMyAnime();
 }
 function onFilterWatched(e) {
@@ -121,6 +139,59 @@ function showMyAnime() {
         // Clear the screen
         const hCards = document.querySelector("#secCards");
         hCards.innerHTML = ""
+        showSearchElements(false);
+
+        // Show the search results
+        for (anime of gMyAnimes) {
+            if (!gFilterWatched || !anime.watched) {
+                // Main container för the card
+                const hCard = document.createElement("article");
+                hCard.classList.add("anime-card");
+                hCard.value = anime; // Store anime object for use in event handlers
+                // Favorite
+                const hFav = document.createElement("button");
+                hFav.innerText = "Ta bort";
+                hFav.addEventListener("click", onFavoriteRemove);
+                hCard.appendChild(hFav);
+                // Watched
+                const hWatchedLabel = document.createElement("label");
+                hWatchedLabel.innerText = "Har sett";
+                hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+                hCard.appendChild(hWatchedLabel);
+                const hWatched = document.createElement("input");
+                hWatched.type = "checkbox";
+                hWatched.id = `chkWatched${anime.id}`;
+                hWatched.checked = anime.watched;
+                hWatched.addEventListener("click", onFavoriteWatched);
+                hCard.appendChild(hWatched);
+                // Image
+                const hPoster = document.createElement("img");
+                hPoster.src = anime.poster;
+                hPoster.classList.add("poster")
+                hCard.appendChild(hPoster);
+                // Title
+                const hTitle = document.createElement("h2");
+                hTitle.innerText = anime.title;
+                hCard.appendChild(hTitle);
+                // Title english
+                const hTitleEn = document.createElement("h3");
+                hTitleEn.innerText = anime.title_english;
+                hCard.appendChild(hTitleEn);
+                // Add container to html page
+                hCards.appendChild(hCard);
+            };
+        };
+    }
+    catch (e) {
+        console.error(e);
+    }
+}
+function showList() {
+    try {
+        // Clear the screen
+        const hCards = document.querySelector("#secCards");
+        hCards.innerHTML = ""
+        showSearchElements(false);
 
         // Show the search results
         for (anime of gMyAnimes) {
@@ -175,7 +246,14 @@ function storage2model() {
 function model2storage() {
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
 }
-
+function showSearchElements(show) {
+    hTxtQuery.hidden = !show;
+    hBtnSearch.hidden = !show;
+    hBtnPrev.hidden = !show;
+    hBtnNext.hidden = !show;
+    hLblFilterWatched.hidden = show;
+    hChkFilterWatched.hidden = show;
+}
 
 // +++ Utility functions
 async function fetchJSON(url) {

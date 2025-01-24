@@ -11,18 +11,32 @@
 
 <body>
 
-    <head>
-        <h1>Mina Anime</h1>
-    </head>
+    <header>
+        <div class="logo">
+            <a href="#">
+                <img alt="Min anime logga" src="./logo.png" />
+            </a>
+            <a href="#">
+                <h1>Mina Anime</h1>
+            </a>
+        </div>
+
+        <nav id="topmenu">
+            <ul>
+                <li><a href="#" id="mnuSearch">SÖK</a></li>
+                <li><a href="#" id="mnuCards">FAV CARDS</a></li>
+                <li><a href="#" id="mnuList">FAV LIST</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <main>
         <form id="frmSearch">
             <input id="txtQuery" type="search" required />
-            <input id="btnSearch" type="button" value="Sök" />
+            <button id="btnSearch" type="submit">Sök</button>
             <input id="btnPrevPage" type="button" value="Föreg sida" />
             <input id="btnNextPage" type="button" value="Nästa sida" />
-            <input id="btnMyAnimes" type="button" value="Mina anime" />
-            <label for="chkFilterWatched">Dölj sedda</label>
+            <label id="lblFilterWatched" for="chkFilterWatched">Dölj sedda</label>
             <input type="checkbox" id="chkFilterWatched">
         </form>
         <section id="secCards"></section>
