@@ -1,3 +1,4 @@
+
 // +++ Gobal constants
 const URL_BASE = "https://api.jikan.moe/v4/";
 const URL_SEARCH = "anime?sfw&q=";
@@ -16,28 +17,29 @@ const hBtnNext = document.querySelector("#btnNextPage");
 const hBtnPrev = document.querySelector("#btnPrevPage");
 const hChkFilterWatched = document.querySelector("#chkFilterWatched");
 const hLblFilterWatched = document.querySelector("#lblFilterWatched");
+const hChkShowList = document.querySelector("#chkShowList");
 const hcMain = document.querySelector("#cMain");
 
 // +++ Event handlers
 hBtnSearch.addEventListener("click", onSearch);
 hBtnNext.addEventListener("click", onNextPage);
 hChkFilterWatched.addEventListener("click", onFilterWatched);
+hChkShowList.addEventListener("click", onShowList);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
-document.querySelector("#mnuCards").addEventListener("click", onCardsTab);
-document.querySelector("#mnuList").addEventListener("click", onListTab);
+document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 
+
 storage2model();
-showMyAnime();
+showSaved();
 
 // +++ Event listeners
 function onSearchTab(e) {
     e.preventDefault();
     showSearchElements(true);
 }
-function onListTab(e) {
-    e.preventDefault();
-    showList();
+function onShowList(e) {
+    showSaved();
 }
 async function onSearch(e) {
     e.preventDefault();
@@ -63,12 +65,12 @@ async function onPrevPage(e) {
         searchAnime();
     }
 }
-function onCardsTab(e) {
-    showMyAnime();
+function onSavedTab(e) {
+    showSaved();
 }
 function onFilterWatched(e) {
     gFilterWatched = !gFilterWatched;
-    showMyAnime();
+    showSaved();
 }
 function onFavoriteAdd(e) {
     gMyAnimes.push(JSON.parse(e.target.value));
@@ -79,7 +81,7 @@ function onFavoriteRemove(e) {
     const fav = e.target.parentElement.value;
     gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === fav.id), 1);
     model2storage();
-    showMyAnime();
+    showSaved();
 }
 function onFavoriteWatched(e) {
     e.target.parentElement.value.watched = !e.target.parentElement.value.watched;
@@ -96,36 +98,39 @@ async function searchAnime() {
         hcMain.innerHTML = ""; // clear the main container
         const hcCards = document.createElement("div"); // container for the cards
         hcCards.id = "cCards";
-        for (anime of json.data) {
-            const fav = {
-                id: anime.mal_id,
-                poster: anime.images.jpg.large_image_url,
-                title: anime.title,
-                title_english: anime.title_english,
-                watched: false // TODO: don't include if already favorited? Or mark?
-            };
+        for (const ja of json.data) {
+            const a = new Anime(
+                ja.mal_id,
+                ja.title,
+                ja.title_english,
+                ja.images.jpg.thumbnail_image_url,
+                ja.images.jpg.small_image_url,
+                ja.images.jpg.large_image_url,
+                false,
+                false // TODO: don't include if already favorited? Or mark?
+            );
             // Card
             const hCard = document.createElement("article");
             hCard.classList.add("anime-card");
             // Favorite
             const hFav = document.createElement("button");
-            hFav.innerText = "Favorit";
-            hFav.value = JSON.stringify(fav); // Can't store the actual object since it's local
+            hFav.innerText = "Spara";
+            hFav.value = JSON.stringify(a); // Can't store the actual object since it's local
             hFav.addEventListener("click", onFavoriteAdd);
             hCard.appendChild(hFav);
             // Image
             const hPoster = document.createElement("img");
-            hPoster.src = anime.images.jpg.large_image_url;
+            hPoster.src = a.poster_s3;
             hPoster.classList.add("poster")
             hCard.appendChild(hPoster);
-            // Title
-            const hTitle = document.createElement("h2");
-            hTitle.innerText = anime.title;
-            hCard.appendChild(hTitle);
             // Title english
-            const hTitleEn = document.createElement("h3");
-            hTitleEn.innerText = anime.title_english;
+            const hTitleEn = document.createElement("h2");
+            hTitleEn.innerText = a.title_en;
             hCard.appendChild(hTitleEn);
+            // Title
+            const hTitle = document.createElement("h3");
+            hTitle.innerText = a.title;
+            hCard.appendChild(hTitle);
             // Add to cards container
             hcCards.appendChild(hCard);
         }
@@ -135,102 +140,92 @@ async function searchAnime() {
         console.error(e);
     }
 }
-function showMyAnime() {
+function showSaved() {
     try {
         showSearchElements(false);
-        // Show the search results
         hcMain.innerHTML = "";
-        const hcCards = document.createElement("div");
-        hcCards.id = "cCards";
-        for (anime of gMyAnimes) {
-            if (!gFilterWatched || !anime.watched) {
-                // Main container för the card
-                const hCard = document.createElement("article");
-                hCard.classList.add("anime-card");
-                hCard.value = anime; // Store anime object for use in event handlers
-                // Favorite
-                const hFav = document.createElement("button");
-                hFav.innerText = "Ta bort";
-                hFav.addEventListener("click", onFavoriteRemove);
-                hCard.appendChild(hFav);
-                // Watched
-                const hWatchedLabel = document.createElement("label");
-                hWatchedLabel.innerText = "Har sett";
-                hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-                hCard.appendChild(hWatchedLabel);
-                const hWatched = document.createElement("input");
-                hWatched.type = "checkbox";
-                hWatched.id = `chkWatched${anime.id}`;
-                hWatched.checked = anime.watched;
-                hWatched.addEventListener("click", onFavoriteWatched);
-                hCard.appendChild(hWatched);
-                // Image
-                const hPoster = document.createElement("img");
-                hPoster.src = anime.poster;
-                hPoster.classList.add("poster")
-                hCard.appendChild(hPoster);
-                // Title english
-                const hTitleEn = document.createElement("h2");
-                hTitleEn.innerText = anime.title_english;
-                hCard.appendChild(hTitleEn);
-                // Title
-                const hTitle = document.createElement("h3");
-                hTitle.innerText = anime.title;
-                hCard.appendChild(hTitle);
-                // Add container to html page
-                hcCards.appendChild(hCard);
+        const hContainer = document.createElement("div");
+        hContainer.id = hChkShowList.checked ?  "cList" : "cCards";
+        for (const a of gMyAnimes) {
+            if (!gFilterWatched || !a.watched) {
+                if (hChkShowList.checked) {
+                    // Main container för the row
+                    createRow(a, hContainer, true);
+                } else {
+                    // Main container för the card
+                    const hCard = document.createElement("article");
+                    hCard.classList.add("anime-card");
+                    hCard.value = a; // Store anime object for use in event handlers
+                    // Favorite
+                    const hFav = document.createElement("button");
+                    hFav.innerText = "Ta bort";
+                    hFav.addEventListener("click", onFavoriteRemove);
+                    hCard.appendChild(hFav);
+                    // Watched
+                    const hWatchedLabel = document.createElement("label");
+                    hWatchedLabel.innerText = "Har sett";
+                    hWatchedLabel.htmlFor = `chkWatched${a.id}`;
+                    hCard.appendChild(hWatchedLabel);
+                    const hWatched = document.createElement("input");
+                    hWatched.type = "checkbox";
+                    hWatched.id = `chkWatched${a.id}`;
+                    hWatched.checked = a.watched;
+                    hWatched.addEventListener("click", onFavoriteWatched);
+                    hCard.appendChild(hWatched);
+                    // Image
+                    const hPoster = document.createElement("img");
+                    hPoster.src = a.poster_s3;
+                    hPoster.classList.add("poster")
+                    hCard.appendChild(hPoster);
+                    // Title english
+                    const hTitleEn = document.createElement("h2");
+                    hTitleEn.innerText = a.title_en;
+                    hCard.appendChild(hTitleEn);
+                    // Title
+                    const hTitle = document.createElement("h3");
+                    hTitle.innerText = a.title;
+                    hCard.appendChild(hTitle);
+                    // Add card to cards container
+                    hContainer.appendChild(hCard);
+                };
             };
         };
-        hcMain.appendChild(hcCards);
+        hcMain.appendChild(hContainer);
     }
     catch (e) {
         console.error(e);
     }
 }
-function showList() {
-    try {
-        showSearchElements(false);
-        // Show the search results
-        hcMain.innerHTML = ""
-        const hcList = document.createElement("div");
-        hcList.id = "cList";
-        for (anime of gMyAnimes) {
-            if (!gFilterWatched || !anime.watched) {
-                // Main container för the row
-                const hRow = document.createElement("div");
-                hRow.classList.add("anime-row");
-                hRow.value = anime; // Store anime object for use in event handlers
-                // Title english
-                const hTitleEn = document.createElement("span");
-                hTitleEn.classList.add("listTitleEn");
-                hTitleEn.innerText = anime.title_english;
-                hRow.appendChild(hTitleEn);
-                // Watched
-                const hWatchedLabel = document.createElement("label");
-                hWatchedLabel.innerText = "Har sett";
-                hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-                hRow.appendChild(hWatchedLabel);
-                const hWatched = document.createElement("input");
-                hWatched.type = "checkbox";
-                hWatched.id = `chkWatched${anime.id}`;
-                hWatched.checked = anime.watched;
-                hWatched.addEventListener("click", onFavoriteWatched);
-                hRow.appendChild(hWatched);
-                // Favorite
-                const hFav = document.createElement("button");
-                hFav.innerText = "Ta bort";
-                hFav.addEventListener("click", onFavoriteRemove);
-                hRow.appendChild(hFav);
-                // Add container to list container
-                hcList.appendChild(hRow);
-            };
-        };
-        hcMain.appendChild(hcList); // Add list to html page
-    }
-    catch (e) {
-        console.error(e);
-    }
+function createRow(anime, hContainer, saved) {
+    const hRow = document.createElement("div");
+    hRow.classList.add("anime-row");
+    hRow.value = anime; // Store anime object for use in event handlers
+
+    // Title english
+    const hTitleEn = document.createElement("span");
+    hTitleEn.classList.add("listTitleEn");
+    hTitleEn.innerText = anime.title_en;
+    hRow.appendChild(hTitleEn);
+    // Watched
+    const hWatchedLabel = document.createElement("label");
+    hWatchedLabel.innerText = "Har sett";
+    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+    hRow.appendChild(hWatchedLabel);
+    const hWatched = document.createElement("input");
+    hWatched.type = "checkbox";
+    hWatched.id = `chkWatched${anime.id}`;
+    hWatched.checked = anime.watched;
+    hWatched.addEventListener("click", onFavoriteWatched);
+    hRow.appendChild(hWatched);
+    // Favorite
+    const hFav = document.createElement("button");
+    hFav.innerText = saved ? "Ta bort" : "Spara";
+    hFav.addEventListener("click", onFavoriteRemove);
+    hRow.appendChild(hFav);
+    // Add container to list container
+    hContainer.appendChild(hRow);
 }
+
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)
@@ -246,6 +241,20 @@ function showSearchElements(show) {
     hBtnNext.hidden = !show;
     hLblFilterWatched.hidden = show;
     hChkFilterWatched.hidden = show;
+}
+
+// +++ Constructors
+class Anime {
+    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, favorite, watched) {
+        this.id = id;
+        this.title = title;
+        this.title_en = title_en;
+        this.poster_s1 = poster_s1;
+        this.poster_s2 = poster_s2;
+        this.poster_s3 = poster_s3;
+        this.favorite = favorite;
+        this.watched = watched;
+    }
 }
 
 // +++ Utility functions
