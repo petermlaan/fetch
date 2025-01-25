@@ -61,7 +61,7 @@ header {
     margin: 0 auto;
 }
 
-#secCards {
+#cCards {
     display: grid;
     grid-template-columns: repeat(auto-fit, 320px);
     justify-content: center;
@@ -79,4 +79,8 @@ header {
             object-fit: cover;
         }
     }
+}
+
+#cList {
+    display: grid;
 }

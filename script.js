@@ -16,6 +16,7 @@ const hBtnNext = document.querySelector("#btnNextPage");
 const hBtnPrev = document.querySelector("#btnPrevPage");
 const hChkFilterWatched = document.querySelector("#chkFilterWatched");
 const hLblFilterWatched = document.querySelector("#lblFilterWatched");
+const hcMain = document.querySelector("#cMain");
 
 // +++ Event handlers
 hBtnSearch.addEventListener("click", onSearch);
@@ -72,6 +73,7 @@ function onFilterWatched(e) {
 function onFavoriteAdd(e) {
     gMyAnimes.push(JSON.parse(e.target.value));
     model2storage();
+    e.target.parentElement.remove(); // remove the card
 }
 function onFavoriteRemove(e) {
     const fav = e.target.parentElement.value;
@@ -90,19 +92,17 @@ async function searchAnime() {
         // Search for anime
         const json = await fetchJSON(URL_BASE + URL_SEARCH + `${gQuery}&page=${gPage}`);
         console.log(json);
-
-        // clear the screen
-        const hCards = document.querySelector("#secCards");
-        hCards.innerHTML = ""
-
         // Show the search results
+        hcMain.innerHTML = ""; // clear the main container
+        const hcCards = document.createElement("div"); // container for the cards
+        hcCards.id = "cCards";
         for (anime of json.data) {
             const fav = {
                 id: anime.mal_id,
                 poster: anime.images.jpg.large_image_url,
                 title: anime.title,
                 title_english: anime.title_english,
-                watched: false // check if it is favorited
+                watched: false // TODO: don't include if already favorited? Or mark?
             };
             // Card
             const hCard = document.createElement("article");
@@ -118,7 +118,7 @@ async function searchAnime() {
             hPoster.src = anime.images.jpg.large_image_url;
             hPoster.classList.add("poster")
             hCard.appendChild(hPoster);
-            //Title
+            // Title
             const hTitle = document.createElement("h2");
             hTitle.innerText = anime.title;
             hCard.appendChild(hTitle);
@@ -126,9 +126,10 @@ async function searchAnime() {
             const hTitleEn = document.createElement("h3");
             hTitleEn.innerText = anime.title_english;
             hCard.appendChild(hTitleEn);
-            // Add to html page
-            hCards.appendChild(hCard);
+            // Add to cards container
+            hcCards.appendChild(hCard);
         }
+        hcMain.appendChild(hcCards); // Add cards to html page
     }
     catch (e) {
         console.error(e);
@@ -136,12 +137,11 @@ async function searchAnime() {
 }
 function showMyAnime() {
     try {
-        // Clear the screen
-        const hCards = document.querySelector("#secCards");
-        hCards.innerHTML = ""
         showSearchElements(false);
-
         // Show the search results
+        hcMain.innerHTML = "";
+        const hcCards = document.createElement("div");
+        hcCards.id = "cCards";
         for (anime of gMyAnimes) {
             if (!gFilterWatched || !anime.watched) {
                 // Main container för the card
@@ -169,18 +169,19 @@ function showMyAnime() {
                 hPoster.src = anime.poster;
                 hPoster.classList.add("poster")
                 hCard.appendChild(hPoster);
-                // Title
-                const hTitle = document.createElement("h2");
-                hTitle.innerText = anime.title;
-                hCard.appendChild(hTitle);
                 // Title english
-                const hTitleEn = document.createElement("h3");
+                const hTitleEn = document.createElement("h2");
                 hTitleEn.innerText = anime.title_english;
                 hCard.appendChild(hTitleEn);
+                // Title
+                const hTitle = document.createElement("h3");
+                hTitle.innerText = anime.title;
+                hCard.appendChild(hTitle);
                 // Add container to html page
-                hCards.appendChild(hCard);
+                hcCards.appendChild(hCard);
             };
         };
+        hcMain.appendChild(hcCards);
     }
     catch (e) {
         console.error(e);
@@ -188,51 +189,43 @@ function showMyAnime() {
 }
 function showList() {
     try {
-        // Clear the screen
-        const hCards = document.querySelector("#secCards");
-        hCards.innerHTML = ""
         showSearchElements(false);
-
         // Show the search results
+        hcMain.innerHTML = ""
+        const hcList = document.createElement("div");
+        hcList.id = "cList";
         for (anime of gMyAnimes) {
             if (!gFilterWatched || !anime.watched) {
-                // Main container för the card
-                const hCard = document.createElement("article");
-                hCard.classList.add("anime-card");
-                hCard.value = anime; // Store anime object for use in event handlers
-                // Favorite
-                const hFav = document.createElement("button");
-                hFav.innerText = "Ta bort";
-                hFav.addEventListener("click", onFavoriteRemove);
-                hCard.appendChild(hFav);
+                // Main container för the row
+                const hRow = document.createElement("div");
+                hRow.classList.add("anime-row");
+                hRow.value = anime; // Store anime object for use in event handlers
+                // Title english
+                const hTitleEn = document.createElement("span");
+                hTitleEn.classList.add("listTitleEn");
+                hTitleEn.innerText = anime.title_english;
+                hRow.appendChild(hTitleEn);
                 // Watched
                 const hWatchedLabel = document.createElement("label");
                 hWatchedLabel.innerText = "Har sett";
                 hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-                hCard.appendChild(hWatchedLabel);
+                hRow.appendChild(hWatchedLabel);
                 const hWatched = document.createElement("input");
                 hWatched.type = "checkbox";
                 hWatched.id = `chkWatched${anime.id}`;
                 hWatched.checked = anime.watched;
                 hWatched.addEventListener("click", onFavoriteWatched);
-                hCard.appendChild(hWatched);
-                // Image
-                const hPoster = document.createElement("img");
-                hPoster.src = anime.poster;
-                hPoster.classList.add("poster")
-                hCard.appendChild(hPoster);
-                // Title
-                const hTitle = document.createElement("h2");
-                hTitle.innerText = anime.title;
-                hCard.appendChild(hTitle);
-                // Title english
-                const hTitleEn = document.createElement("h3");
-                hTitleEn.innerText = anime.title_english;
-                hCard.appendChild(hTitleEn);
-                // Add container to html page
-                hCards.appendChild(hCard);
+                hRow.appendChild(hWatched);
+                // Favorite
+                const hFav = document.createElement("button");
+                hFav.innerText = "Ta bort";
+                hFav.addEventListener("click", onFavoriteRemove);
+                hRow.appendChild(hFav);
+                // Add container to list container
+                hcList.appendChild(hRow);
             };
         };
+        hcMain.appendChild(hcList); // Add list to html page
     }
     catch (e) {
         console.error(e);
