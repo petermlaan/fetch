@@ -10,7 +10,7 @@ let gSearchResults = [];
 let gFilterWatched = false;
 let gPage = 1;
 let gQuery = "";
-let gTab = 1; // 0 - search, 1 - saved
+let gTab = 1; // 0 - search, 1 - saved, 2 - single
 
 // +++ Global html elements
 const hTxtQuery = document.querySelector("#txtQuery");
@@ -45,6 +45,11 @@ function onSavedTab(e) {
     e.preventDefault();
     gTab = 1;
     showSaved();
+}
+function onSingleTab(e) {
+    e.preventDefault();
+    gTab = 2;
+    showSingle(e.target.parentElement.value);
 }
 function onShowList(e) {
     if (gTab === 0)
@@ -211,12 +216,50 @@ function createRow(anime, saved) {
         hRow.appendChild(hWatched);
     }
     // Title
-    const hTitleEn = document.createElement("span");
-    hTitleEn.classList.add("listTitleEn");
+    const hTitleEn = document.createElement("a");
+    //hTitleEn.classList.add("listTitleEn");
+    hTitleEn.href="#";
+    hTitleEn.addEventListener("click", onSingleTab);
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
     hRow.appendChild(hTitleEn);
 
     return hRow;
+}
+function showSingle(anime) {
+    hcMain.innerHTML = "";
+    const hCard = document.createElement("article");
+    hCard.classList.add("anime-card");
+    hCard.value = anime; // Store anime object for use in event handlers
+    // Save button
+    const hFav = document.createElement("button");
+    hFav.innerText = anime.saved ? "Ta bort" : "Spara";
+    hFav.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
+    hCard.appendChild(hFav);
+    // Watched
+    const hWatchedLabel = document.createElement("label");
+    hWatchedLabel.innerText = "Har sett";
+    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+    hCard.appendChild(hWatchedLabel);
+    const hWatched = document.createElement("input");
+    hWatched.type = "checkbox";
+    hWatched.id = `chkWatched${anime.id}`;
+    hWatched.checked = anime.watched;
+    hWatched.addEventListener("click", onSavedWatched);
+    hCard.appendChild(hWatched);
+    // Image
+    const hPoster = document.createElement("img");
+    hPoster.src = anime.poster_s3;
+    hPoster.classList.add("poster");
+    hCard.appendChild(hPoster);
+    // Title english
+    const hTitleEn = document.createElement("h2");
+    hTitleEn.innerText = anime.title_en;
+    hCard.appendChild(hTitleEn);
+    // Title
+    const hTitle = document.createElement("h3");
+    hTitle.innerText = anime.title;
+    hCard.appendChild(hTitle);
+    hcMain.appendChild(hCard);
 }
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
@@ -237,14 +280,14 @@ function showSearchElements(show) {
 
 // +++ Classes
 class Anime {
-    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, favorite, watched) {
+    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, saved, watched) {
         this.id = id;
         this.title = title;
         this.title_en = title_en;
         this.poster_s1 = poster_s1;
         this.poster_s2 = poster_s2;
         this.poster_s3 = poster_s3;
-        this.favorite = favorite;
+        this.saved = saved;
         this.watched = watched;
     }
 }
