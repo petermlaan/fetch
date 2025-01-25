@@ -22,7 +22,7 @@ const hLblFilterWatched = document.querySelector("#lblFilterWatched");
 const hChkShowList = document.querySelector("#chkShowList");
 const hcMain = document.querySelector("#cMain");
 
-// +++ Event handlers
+// +++ Add event listeners
 hBtnSearch.addEventListener("click", onSearch);
 hBtnNext.addEventListener("click", onNextPage);
 hChkFilterWatched.addEventListener("click", onFilterWatched);
@@ -30,6 +30,7 @@ hChkShowList.addEventListener("click", onShowList);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 document.querySelector("#frmSearch").addEventListener("submit", onSearch);
+
 
 storage2model();
 showSaved();
@@ -39,6 +40,11 @@ function onSearchTab(e) {
     e.preventDefault();
     gTab = 0;
     showSearchElements(true);
+}
+function onSavedTab(e) {
+    e.preventDefault();
+    gTab = 1;
+    showSaved();
 }
 function onShowList(e) {
     if (gTab === 0)
@@ -90,36 +96,31 @@ async function onPrevPage(e) {
         showSearchResults();
     }
 }
-function onSavedTab(e) {
-    gTab = 1;
-    showSaved();
-}
 function onFilterWatched(e) {
     gFilterWatched = !gFilterWatched;
     showSaved();
 }
-function onFavoriteAdd(e) {
-    gMyAnimes.push(JSON.parse(e.target.parentElement.value));
+function onSavedAdd(e) {
+    gMyAnimes.unshift(e.target.parentElement.value);
     model2storage();
-    e.target.parentElement.remove(); // remove the card
+    e.target.parentElement.remove(); // remove the card/row
 }
-function onFavoriteRemove(e) {
+function onSavedRemove(e) {
     const fav = e.target.parentElement.value;
     gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === fav.id), 1);
     model2storage();
     showSaved();
 }
-function onFavoriteWatched(e) {
+function onSavedWatched(e) {
     e.target.parentElement.value.watched = !e.target.parentElement.value.watched;
     model2storage();
 }
 
 // +++ Other functions
 async function showSearchResults() {
-    // Show the search results
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div"); // container for the cards
-    hcCards.id = hChkShowList.checked ? "cList" : "cCards";
+    hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
     for (const a of gSearchResults) {
         if (hChkShowList.checked)
             hcCards.appendChild(createRow(a, false));
@@ -133,7 +134,13 @@ function showSaved() {
         showSearchElements(false);
         hcMain.innerHTML = "";
         const hContainer = document.createElement("div");
-        hContainer.id = hChkShowList.checked ? "cList" : "cCards";
+        hContainer.id = hChkShowList.checked ? "cListSaved" : "cCards";
+        if (hChkShowList.checked) {
+            const hTitleRow = document.createElement("div");
+            hTitleRow.innerHTML = "<span></span><span>Har sett</span><span>Titel</span>";
+            hTitleRow.classList.add("anime-row");
+            hContainer.appendChild(hTitleRow);
+        }
         for (const a of gMyAnimes) {
             if (!gFilterWatched || !a.watched) {
                 if (hChkShowList.checked)
@@ -151,11 +158,11 @@ function showSaved() {
 function createCard(anime, saved) {
     const hCard = document.createElement("article");
     hCard.classList.add("anime-card");
-    hCard.value = saved ? anime : JSON.stringify(anime); // Store anime object for use in event handlers
+    hCard.value = anime; // Store anime object for use in event handlers
     // Save button
     const hFav = document.createElement("button");
     hFav.innerText = saved ? "Ta bort" : "Spara";
-    hFav.addEventListener("click", saved ? onFavoriteRemove : onFavoriteAdd);
+    hFav.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
     hCard.appendChild(hFav);
     // Watched
     const hWatchedLabel = document.createElement("label");
@@ -166,7 +173,7 @@ function createCard(anime, saved) {
     hWatched.type = "checkbox";
     hWatched.id = `chkWatched${anime.id}`;
     hWatched.checked = anime.watched;
-    hWatched.addEventListener("click", onFavoriteWatched);
+    hWatched.addEventListener("click", onSavedWatched);
     hCard.appendChild(hWatched);
     // Image
     const hPoster = document.createElement("img");
@@ -189,31 +196,28 @@ function createRow(anime, saved) {
     hRow.classList.add("anime-row");
     hRow.value = anime; // Store anime object for use in event handlers
 
+    // Save / unsave
+    const hFav = document.createElement("button");
+    hFav.innerText = saved ? "Ta bort" : "Spara";
+    hFav.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
+    hRow.appendChild(hFav);
+    // Watched
+    if (saved) {
+        const hWatched = document.createElement("input");
+        hWatched.type = "checkbox";
+        hWatched.id = `chkWatched${anime.id}`;
+        hWatched.checked = anime.watched;
+        hWatched.addEventListener("click", onSavedWatched);
+        hRow.appendChild(hWatched);
+    }
     // Title
     const hTitleEn = document.createElement("span");
     hTitleEn.classList.add("listTitleEn");
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
     hRow.appendChild(hTitleEn);
-    // Watched
-    const hWatchedLabel = document.createElement("label");
-    hWatchedLabel.innerText = "Har sett";
-    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-    hRow.appendChild(hWatchedLabel);
-    const hWatched = document.createElement("input");
-    hWatched.type = "checkbox";
-    hWatched.id = `chkWatched${anime.id}`;
-    hWatched.checked = anime.watched;
-    hWatched.addEventListener("click", onFavoriteWatched);
-    hRow.appendChild(hWatched);
-    // Favorite
-    const hFav = document.createElement("button");
-    hFav.innerText = saved ? "Ta bort" : "Spara";
-    hFav.addEventListener("click", onFavoriteRemove);
-    hRow.appendChild(hFav);
 
     return hRow;
 }
-
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)

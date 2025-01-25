@@ -85,9 +85,14 @@ header {
     }
 }
 
-#cList {
+#cListSearch {
     display: grid;
-    grid-template-columns: 1fr 4rem 2rem 5rem;
+    grid-template-columns: 4rem 1fr;
+}
+
+#cListSaved {
+    display: grid;
+    grid-template-columns: 4rem 5rem 1fr;
 }
 
 .anime-row {
