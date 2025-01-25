@@ -76,6 +76,7 @@ async function onSearch(e) {
                 ja.images.jpg.thumbnail_image_url,
                 ja.images.jpg.small_image_url,
                 ja.images.jpg.large_image_url,
+                ja.synopsis,
                 false,
                 false
             );
@@ -228,37 +229,48 @@ function createRow(anime, saved) {
 function showSingle(anime) {
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
-    hCard.classList.add("anime-card");
+    hCard.classList.add("single-card");
     hCard.value = anime; // Store anime object for use in event handlers
+    // Left
+    const hLeft = document.createElement("div");
     // Save button
     const hFav = document.createElement("button");
     hFav.innerText = anime.saved ? "Ta bort" : "Spara";
     hFav.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
-    hCard.appendChild(hFav);
+    hLeft.appendChild(hFav);
     // Watched
     const hWatchedLabel = document.createElement("label");
     hWatchedLabel.innerText = "Har sett";
     hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-    hCard.appendChild(hWatchedLabel);
+    hLeft.appendChild(hWatchedLabel);
     const hWatched = document.createElement("input");
     hWatched.type = "checkbox";
     hWatched.id = `chkWatched${anime.id}`;
     hWatched.checked = anime.watched;
     hWatched.addEventListener("click", onSavedWatched);
-    hCard.appendChild(hWatched);
+    hLeft.appendChild(hWatched);
     // Image
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
     hPoster.classList.add("poster");
-    hCard.appendChild(hPoster);
+    hLeft.appendChild(hPoster);
+    hCard.appendChild(hLeft);
+    // Right
+    const hRight = document.createElement("div");
     // Title english
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en;
-    hCard.appendChild(hTitleEn);
+    hRight.appendChild(hTitleEn);
     // Title
     const hTitle = document.createElement("h3");
     hTitle.innerText = anime.title;
-    hCard.appendChild(hTitle);
+    hRight.appendChild(hTitle);
+    // Synopsis
+    const hSynopsis = document.createElement("p");
+    hSynopsis.innerText = anime.synopsis;
+    hRight.appendChild(hSynopsis);
+    hCard.appendChild(hRight);
+
     hcMain.appendChild(hCard);
 }
 function storage2model() {
@@ -280,13 +292,14 @@ function showSearchElements(show) {
 
 // +++ Classes
 class Anime {
-    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, saved, watched) {
+    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, synopsis, saved, watched) {
         this.id = id;
         this.title = title;
         this.title_en = title_en;
         this.poster_s1 = poster_s1;
         this.poster_s2 = poster_s2;
         this.poster_s3 = poster_s3;
+        this.synopsis = synopsis;
         this.saved = saved;
         this.watched = watched;
     }
