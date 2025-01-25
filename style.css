@@ -104,6 +104,7 @@ header {
 
 .single-card {
     display: flex;
+    gap: 1rem;
     background-color: var(--clr-main1);
     border: 1px solid var(--clr-main3);
     padding: 10px;
@@ -120,15 +121,24 @@ header {
 #cListSearch {
     display: grid;
     grid-template-columns: 4rem 1fr;
+    gap: 0.5rem 0.5rem;
 }
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4rem 5rem 1fr;
+    grid-template-columns: 4rem 5rem 3rem 1fr;
+    gap: 0.5rem 0.5rem;
 }
 
 .anime-row {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
+}
+
+.title-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    font-weight: bold;
 }
