@@ -78,6 +78,8 @@ async function onSearch(e) {
                 ja.images.jpg.small_image_url,
                 ja.images.jpg.large_image_url,
                 ja.synopsis,
+                ja.genres,
+                ja.score,
                 false,
                 false,
                 0
@@ -125,6 +127,11 @@ function onSavedWatched(e) {
     e.target.parentElement.value.watched = !e.target.parentElement.value.watched;
     model2storage();
 }
+function onRatingChange(e) {
+    const anime = e.target.parentElement.value;
+    anime.myRating = e.target.value;
+    model2storage();
+}
 
 // +++ Other functions
 async function showSearchResults() {
@@ -147,7 +154,7 @@ function showSaved() {
         hContainer.id = hChkShowList.checked ? "cListSaved" : "cCards";
         if (hChkShowList.checked) {
             const hTitleRow = document.createElement("div");
-            hTitleRow.innerHTML = "<span></span><span>Har sett</span><span>Betyg</span><span>Titel</span>";
+            hTitleRow.innerHTML = "<span></span><span>Har sett</span><span>Betyg</span><span>Poäng</span><span>Titel</span>";
             hTitleRow.classList.add("title-row");
             hContainer.appendChild(hTitleRow);
         }
@@ -215,28 +222,35 @@ function createRow(anime, saved) {
     if (saved) {
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
-        hWatched.id = `chkWatched${anime.id}`;
+        //hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
         hRow.appendChild(hWatched);
     }
     // My rating
-    const hRating = document.createElement("select");
-    for (let i = 0; i < 6; i++) {
-        const hOption = document.createElement("option");
-        if (i === 0) {
-            hOption.text = "";
-            hOption.value = 0;
-        } else {
-            hOption.text = i;
-            hOption.value = i;
+    if (saved) {
+        const hRating = document.createElement("select");
+        hRating.addEventListener("change", onRatingChange);
+        for (let i = 0; i < 6; i++) {
+            const hOption = document.createElement("option");
+            if (i === 0) {
+                hOption.text = "";
+                hOption.value = 0;
+            } else {
+                hOption.text = i;
+                hOption.value = i;
+            }
+            hRating.appendChild(hOption);
         }
-        hRating.appendChild(hOption);
+        hRating.selectedIndex = anime.myRating;
+        hRow.appendChild(hRating);
     }
-    hRow.appendChild(hRating);
+    const hScore = document.createElement("span");
+    hScore.innerText = anime.score;
+    hRow.appendChild(hScore);
     // Title
     const hTitleEn = document.createElement("a");
-    hTitleEn.href="#";
+    hTitleEn.href = "#";
     hTitleEn.addEventListener("click", onSingleTab);
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
     hRow.appendChild(hTitleEn);
@@ -309,7 +323,7 @@ function showSearchElements(show) {
 
 // +++ Classes
 class Anime {
-    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, synopsis, saved, watched, myRating) {
+    constructor(id, title, title_en, poster_s1, poster_s2, poster_s3, synopsis, genres, score, saved, watched, myRating) {
         this.id = id;
         this.title = title;
         this.title_en = title_en;
@@ -317,6 +331,8 @@ class Anime {
         this.poster_s2 = poster_s2;
         this.poster_s3 = poster_s3;
         this.synopsis = synopsis;
+        this.genres = genres;
+        this.score = score;
         this.saved = saved;
         this.watched = watched;
         this.myRating = myRating;

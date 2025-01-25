@@ -20,6 +20,21 @@ a {
     }
 }
 
+select {
+    background-color: var(--clr-main2);
+    color: var(--clr-main3);
+}
+
+input {
+    background-color: var(--clr-main2);
+    color: var(--clr-main3);
+}
+
+button {
+    background-color: var(--clr-main2);
+    color: var(--clr-main3);
+}
+
 body {
     margin: 0;
 }
@@ -34,7 +49,8 @@ header {
         align-items: center;
 
         img {
-            width: 60px;
+            width: 100px;
+            height: 40px;
             margin: 0 1rem;
         }
     }
@@ -120,13 +136,13 @@ header {
 
 #cListSearch {
     display: grid;
-    grid-template-columns: 4rem 1fr;
+    grid-template-columns: 4rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 }
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4rem 5rem 3rem 1fr;
+    grid-template-columns: 4rem 5rem 3rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 }
 
