@@ -143,9 +143,9 @@ async function showSearchResults() {
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
     for (const a of gSearchResults) {
         if (hChkShowList.checked)
-            hcCards.appendChild(createRow(a, false));
+            hcCards.appendChild(createRow(a));
         else
-            hcCards.appendChild(createCard(a, false));
+            hcCards.appendChild(createCard(a));
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
@@ -165,9 +165,9 @@ function showSaved() {
         for (const a of gMyAnimes) {
             if (!gFilterWatched || !a.watched) {
                 if (hChkShowList.checked)
-                    hContainer.appendChild(createRow(a, true));
+                    hContainer.appendChild(createRow(a));
                 else
-                    hContainer.appendChild(createCard(a, true));
+                    hContainer.appendChild(createCard(a));
             };
         };
         hcMain.appendChild(hContainer);
@@ -175,103 +175,6 @@ function showSaved() {
     catch (e) {
         console.error(e);
     }
-}
-function createCard(anime, saved) {
-    const hCard = document.createElement("article");
-    hCard.classList.add("anime-card");
-    // Save button
-    const hSave = document.createElement("button");
-    hSave.innerText = saved ? "Ta bort" : "Spara";
-    hSave.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
-    hSave.anime = anime; // Store anime object for use in event handler
-    hCard.appendChild(hSave);
-    // Watched
-    if (saved) {
-        const hWatchedLabel = document.createElement("label");
-        hWatchedLabel.innerText = "Har sett";
-        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-        hCard.appendChild(hWatchedLabel);
-        const hWatched = document.createElement("input");
-        hWatched.type = "checkbox";
-        hWatched.id = `chkWatched${anime.id}`;
-        hWatched.checked = anime.watched;
-        hWatched.addEventListener("click", onSavedWatched);
-        hWatched.anime = anime; // Store anime object for use in event handler
-        hCard.appendChild(hWatched);
-    }
-    // Image
-    const hPosterLink = document.createElement("a");
-    hPosterLink.href = "#";
-    hPosterLink.addEventListener("click", onSingleTab);
-    const hPoster = document.createElement("img");
-    hPoster.src = anime.poster_s3;
-    hPoster.anime = anime; // Needs to be on the img for some reason. Store anime object for use in event handler
-    hPoster.classList.add("poster");
-    hPosterLink.appendChild(hPoster);
-    hCard.appendChild(hPosterLink);
-    // Title english
-    const hTitleEn = document.createElement("h2");
-    hTitleEn.innerText = anime.title_en;
-    hCard.appendChild(hTitleEn);
-    // Title
-    const hTitle = document.createElement("h3");
-    hTitle.innerText = anime.title;
-    hCard.appendChild(hTitle);
-
-    return hCard;
-}
-function createRow(anime, saved) {
-    const hRow = document.createElement("div");
-    hRow.classList.add("anime-row");
-    hRow.anime = anime; // Store anime object for use in event handlers
-
-    // Save / unsave
-    const hSave = document.createElement("button");
-    hSave.innerText = saved ? "Ta bort" : "Spara";
-    hSave.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
-    hSave.anime = anime; // Store anime object for use in event handler
-    hRow.appendChild(hSave);
-    // Watched
-    if (saved) {
-        const hWatched = document.createElement("input");
-        hWatched.type = "checkbox";
-        //hWatched.id = `chkWatched${anime.id}`;
-        hWatched.checked = anime.watched;
-        hWatched.addEventListener("click", onSavedWatched);
-        hWatched.anime = anime; // Store anime object for use in event handler
-        hRow.appendChild(hWatched);
-    }
-    // My rating
-    if (saved) {
-        const hRating = document.createElement("select");
-        hRating.addEventListener("change", onRatingChange);
-        hRating.anime = anime; // Store anime object for use in event handler
-        for (let i = 0; i < 6; i++) {
-            const hOption = document.createElement("option");
-            if (i === 0) {
-                hOption.text = "";
-                hOption.value = 0;
-            } else {
-                hOption.text = i;
-                hOption.value = i;
-            }
-            hRating.appendChild(hOption);
-        }
-        hRating.selectedIndex = anime.myRating;
-        hRow.appendChild(hRating);
-    }
-    const hScore = document.createElement("span");
-    hScore.innerText = anime.score;
-    hRow.appendChild(hScore);
-    // Title
-    const hTitleEn = document.createElement("a");
-    hTitleEn.href = "#";
-    hTitleEn.addEventListener("click", onSingleTab);
-    hTitleEn.anime = anime; // Store anime object for use in event handler
-    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
-    hRow.appendChild(hTitleEn);
-
-    return hRow;
 }
 function showSingle(anime) {
     gTab = 2;
@@ -325,6 +228,101 @@ function showSingle(anime) {
     hCard.appendChild(hRight);
 
     hcMain.appendChild(hCard);
+}
+function createCard(anime) {
+    // Returns a small card article element for the supplied anime object
+
+    const hCard = document.createElement("article");
+    hCard.classList.add("anime-card");
+    // Save button
+    const hSave = document.createElement("button");
+    hSave.innerText = anime.saved ? "Ta bort" : "Spara";
+    hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
+    hSave.anime = anime; // Store anime object for use in event handler
+    hCard.appendChild(hSave);
+    // Watched
+    if (anime.saved) {
+        const hWatchedLabel = document.createElement("label");
+        hWatchedLabel.innerText = "Har sett";
+        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+        hCard.appendChild(hWatchedLabel);
+        const hWatched = document.createElement("input");
+        hWatched.type = "checkbox";
+        hWatched.id = `chkWatched${anime.id}`;
+        hWatched.checked = anime.watched;
+        hWatched.addEventListener("click", onSavedWatched);
+        hWatched.anime = anime; // Store anime object for use in event handler
+        hCard.appendChild(hWatched);
+    }
+    // Image
+    const hPosterLink = document.createElement("a");
+    hPosterLink.href = "#";
+    hPosterLink.addEventListener("click", onSingleTab);
+    const hPoster = document.createElement("img");
+    hPoster.src = anime.poster_s3;
+    hPoster.anime = anime; // Needs to be on the img for some reason. Store anime object for use in event handler
+    hPoster.classList.add("poster");
+    hPosterLink.appendChild(hPoster);
+    hCard.appendChild(hPosterLink);
+    // Title
+    const hTitleEn = document.createElement("h2");
+    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
+    hCard.appendChild(hTitleEn);
+
+    return hCard;
+}
+function createRow(anime) {
+    const hRow = document.createElement("div");
+    hRow.classList.add("anime-row");
+    hRow.anime = anime; // Store anime object for use in event handlers
+
+    // Save / unsave
+    const hSave = document.createElement("button");
+    hSave.innerText = anime.saved ? "Ta bort" : "Spara";
+    hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
+    hSave.anime = anime; // Store anime object for use in event handler
+    hRow.appendChild(hSave);
+    // Watched
+    if (anime.saved) {
+        const hWatched = document.createElement("input");
+        hWatched.type = "checkbox";
+        //hWatched.id = `chkWatched${anime.id}`;
+        hWatched.checked = anime.watched;
+        hWatched.addEventListener("click", onSavedWatched);
+        hWatched.anime = anime; // Store anime object for use in event handler
+        hRow.appendChild(hWatched);
+    }
+    // My rating
+    if (anime.saved) {
+        const hRating = document.createElement("select");
+        hRating.addEventListener("change", onRatingChange);
+        hRating.anime = anime; // Store anime object for use in event handler
+        for (let i = 0; i < 6; i++) {
+            const hOption = document.createElement("option");
+            if (i === 0) {
+                hOption.text = "";
+                hOption.value = 0;
+            } else {
+                hOption.text = i;
+                hOption.value = i;
+            }
+            hRating.appendChild(hOption);
+        }
+        hRating.selectedIndex = anime.myRating;
+        hRow.appendChild(hRating);
+    }
+    const hScore = document.createElement("span");
+    hScore.innerText = anime.score;
+    hRow.appendChild(hScore);
+    // Title
+    const hTitleEn = document.createElement("a");
+    hTitleEn.href = "#";
+    hTitleEn.addEventListener("click", onSingleTab);
+    hTitleEn.anime = anime; // Store anime object for use in event handler
+    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
+    hRow.appendChild(hTitleEn);
+
+    return hRow;
 }
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);

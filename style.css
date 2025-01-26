@@ -31,8 +31,12 @@ input {
 }
 
 button {
-    background-color: var(--clr-main2);
-    color: var(--clr-main3);
+    background-color: var(--clr-main3);
+    color: var(--clr-main0);
+
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 body {
@@ -109,12 +113,18 @@ header {
 .anime-card {
     background-color: var(--clr-main1);
     border: 1px solid var(--clr-main3);
-    padding: 10px;
+    padding: 9px;
 
     .poster {
         width: 300px;
         height: 450px;
         object-fit: cover;
+        margin-top: 14px;
+        transition: scale 0.2s linear;
+
+        &:hover {
+            scale: 1.05;
+        }
     }
 }
 
