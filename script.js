@@ -98,7 +98,7 @@ async function onSearch(e) {
         if (!hForm.reportValidity())
             return;
         gQuery = newQuery;
-        const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
+        const json = await fetchJSONAsync(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
         console.log(json);
         gSearchResults = [];
         for (const ja of json.data) {
@@ -174,7 +174,7 @@ function onHistoryChanged(e) {
 async function onTest(e) {
     // Add some test data
     async function addAnime(id) {
-        const json = await fetchJSON(API_URL_BASE + "anime/" + id);
+        const json = await fetchJSONAsync(API_URL_BASE + "anime/" + id);
         const jsondata = json.data;
         const a = new Anime(
             jsondata.mal_id,
@@ -197,25 +197,25 @@ async function onTest(e) {
         console.log("Is array? " + Array.isArray(gMyAnimes));
         await addAnime(121);
         await addAnime(431);
-/*        await addAnime(813);
-        await addAnime(512);
-        await addAnime(1);
-        await addAnime(32281);
-        await addAnime(1943);
-        await addAnime(21);
-        await addAnime(572);
-        await addAnime(523);
-        await addAnime(199);
-        addAnime(5114);
-        addAnime(164);
-        addAnime(1535);
-        addAnime(31964);
-        addAnime(40748);
-        addAnime(41467);
-        addAnime(38000);
-        addAnime(57334);
-        addAnime(16498);
-        addAnime(37521);*/
+        /*        await addAnime(813);
+                await addAnime(512);
+                await addAnime(1);
+                await addAnime(32281);
+                await addAnime(1943);
+                await addAnime(21);
+                await addAnime(572);
+                await addAnime(523);
+                await addAnime(199);
+                addAnime(5114);
+                addAnime(164);
+                addAnime(1535);
+                addAnime(31964);
+                addAnime(40748);
+                addAnime(41467);
+                addAnime(38000);
+                addAnime(57334);
+                addAnime(16498);
+                addAnime(37521);*/
         model2storage();
         gTab = 1;
         showSaved();
@@ -237,6 +237,7 @@ async function showSearchResults() {
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
+
 function showSaved() {
     try {
         showSearchElements(false);
@@ -263,6 +264,7 @@ function showSaved() {
         console.error(e);
     }
 }
+
 function showSingle(anime) {
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
@@ -315,6 +317,7 @@ function showSingle(anime) {
 
     hcMain.appendChild(hCard);
 }
+
 function createCard(anime) {
     // Returns a small card article element for the supplied anime object
 
@@ -363,6 +366,7 @@ function createCard(anime) {
 
     return hCard;
 }
+
 function createRow(anime) {
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
@@ -416,6 +420,7 @@ function createRow(anime) {
 
     return hRow;
 }
+
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)
@@ -423,11 +428,13 @@ function storage2model() {
     if (!gMyAnimes)
         gMyAnimes = [];
 }
+
 function model2storage() {
     console.log("model2storage: gMyAnimes");
     console.log(gMyAnimes);
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
 }
+
 function showSearchElements(show) {
     hTxtQuery.hidden = !show;
     hBtnSearch.hidden = !show;
@@ -456,7 +463,7 @@ class Anime {
 }
 
 // +++ Utility functions
-async function fetchJSON(url) {
+async function fetchJSONAsync(url) {
     console.log(url);
     const response = await fetch(url);
     if (!response.ok)
@@ -464,6 +471,22 @@ async function fetchJSON(url) {
     const data = await response.json();
     return data;
 }
+
+function fetchJSON(url) {
+    console.log(url);
+    let ret = null;
+    fetch(url).then(response => {
+        if (!response.ok)
+            throw new Error(response);
+        return response.json();
+    }).then(data => {
+        ret = data;
+    }).catch(err => {
+        console.error(err);
+    });
+    return data;
+}
+
 function pushState(urlend, state) {
     const nextURL = URL_BASE + urlend;
     let title = "My Anime -";
