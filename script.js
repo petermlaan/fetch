@@ -182,16 +182,18 @@ function createCard(anime, saved) {
     hFav.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
     hCard.appendChild(hFav);
     // Watched
-    const hWatchedLabel = document.createElement("label");
-    hWatchedLabel.innerText = "Har sett";
-    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-    hCard.appendChild(hWatchedLabel);
-    const hWatched = document.createElement("input");
-    hWatched.type = "checkbox";
-    hWatched.id = `chkWatched${anime.id}`;
-    hWatched.checked = anime.watched;
-    hWatched.addEventListener("click", onSavedWatched);
-    hCard.appendChild(hWatched);
+    if (saved) {
+        const hWatchedLabel = document.createElement("label");
+        hWatchedLabel.innerText = "Har sett";
+        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+        hCard.appendChild(hWatchedLabel);
+        const hWatched = document.createElement("input");
+        hWatched.type = "checkbox";
+        hWatched.id = `chkWatched${anime.id}`;
+        hWatched.checked = anime.watched;
+        hWatched.addEventListener("click", onSavedWatched);
+        hCard.appendChild(hWatched);
+    }
     // Image
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
