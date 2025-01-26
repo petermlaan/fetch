@@ -172,9 +172,9 @@ function onHistoryChanged(e) {
     console.log(e);
 }
 async function onTest(e) {
-    try {
-        const json = await fetchJSON(API_URL_BASE + "anime/121");
-        console.log(json);
+    // Add some test data
+    async function addAnime(id) {
+        const json = await fetchJSON(API_URL_BASE + "anime/" + id);
         const jsondata = json.data;
         const a = new Anime(
             jsondata.mal_id,
@@ -189,10 +189,38 @@ async function onTest(e) {
             true,
             false,
             0);
-        console.log(a);
         gMyAnimes.push(a);
+    }
+    try {
+        e.preventDefault();
+        gMyAnimes = [];
+        console.log("Is array? " + Array.isArray(gMyAnimes));
+        await addAnime(121);
+        await addAnime(431);
+/*        await addAnime(813);
+        await addAnime(512);
+        await addAnime(1);
+        await addAnime(32281);
+        await addAnime(1943);
+        await addAnime(21);
+        await addAnime(572);
+        await addAnime(523);
+        await addAnime(199);
+        addAnime(5114);
+        addAnime(164);
+        addAnime(1535);
+        addAnime(31964);
+        addAnime(40748);
+        addAnime(41467);
+        addAnime(38000);
+        addAnime(57334);
+        addAnime(16498);
+        addAnime(37521);*/
+        model2storage();
+        gTab = 1;
+        showSaved();
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }
 
@@ -396,6 +424,8 @@ function storage2model() {
         gMyAnimes = [];
 }
 function model2storage() {
+    console.log("model2storage: gMyAnimes");
+    console.log(gMyAnimes);
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
 }
 function showSearchElements(show) {
