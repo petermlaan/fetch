@@ -137,6 +137,14 @@ function onRatingChange(e) {
 
 // +++ Other functions
 async function showSearchResults() {
+    if (gTab !== 0) {
+        console.log("changing url...");
+        const nextState = { additionalInformation: 'Updated the URL with JS' };
+        const nextURL = "./search?q=" + gQuery;
+        const nextTitle = 'My Anime - Search';
+        window.history.pushState(nextState, nextTitle, nextURL);
+        console.log(window.history);
+    }
     gTab = 0;
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div"); // container for the cards
@@ -234,26 +242,32 @@ function createCard(anime) {
 
     const hCard = document.createElement("article");
     hCard.classList.add("anime-card");
+
+    // Top row
+    const hTopRow = document.createElement("div");
+    hTopRow.classList.add("card-toprow");
     // Save button
     const hSave = document.createElement("button");
     hSave.innerText = anime.saved ? "Ta bort" : "Spara";
     hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
     hSave.anime = anime; // Store anime object for use in event handler
-    hCard.appendChild(hSave);
+    hTopRow.appendChild(hSave);
     // Watched
     if (anime.saved) {
         const hWatchedLabel = document.createElement("label");
         hWatchedLabel.innerText = "Har sett";
         hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-        hCard.appendChild(hWatchedLabel);
+        hTopRow.appendChild(hWatchedLabel);
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
         hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
         hWatched.anime = anime; // Store anime object for use in event handler
-        hCard.appendChild(hWatched);
+        hWatchedLabel.appendChild(hWatched);
     }
+    hCard.appendChild(hTopRow);
+
     // Image
     const hPosterLink = document.createElement("a");
     hPosterLink.href = "#";
@@ -328,6 +342,10 @@ function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)
         gMyAnimes = JSON.parse(m);
+    console.log(gMyAnimes);
+    if (!gMyAnimes)
+        gMyAnimes = [];
+    console.log(gMyAnimes);
 }
 function model2storage() {
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));

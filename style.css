@@ -115,6 +115,11 @@ header {
     border: 1px solid var(--clr-main3);
     padding: 9px;
 
+    .card-toprow {
+        display: flex;
+        justify-content: space-between;
+    }
+
     .poster {
         width: 300px;
         height: 450px;
