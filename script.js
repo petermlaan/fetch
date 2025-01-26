@@ -39,19 +39,15 @@ showSaved();
 // +++ Event listeners
 function onSearchTab(e) {
     e.preventDefault();
-    gTab = 0;
     showSearchElements(true);
     showSearchResults();
 }
 function onSavedTab(e) {
     e.preventDefault();
-    gTab = 1;
     showSaved();
 }
 function onSingleTab(e) {
     e.preventDefault();
-    gTab = 2;
-    console.log(e);
     const anime = e.target.anime;
     showSingle(anime);
 }
@@ -118,14 +114,13 @@ function onSavedAdd(e) {
     anime.saved = true;
     gMyAnimes.unshift(anime);
     model2storage();
-    if (gTab !== 2)
+    if (gTab === 2)
+        showSaved();
+    else
         e.target.parentElement.remove(); // remove the card/row
 }
 function onSavedRemove(e) {
-    console.log("saved remove");
-    console.log(e);
     const anime = e.target.anime;
-    console.log(anime);
     gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === anime.id), 1);
     model2storage();
     showSaved();
@@ -142,6 +137,7 @@ function onRatingChange(e) {
 
 // +++ Other functions
 async function showSearchResults() {
+    gTab = 0;
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div"); // container for the cards
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
@@ -155,6 +151,7 @@ async function showSearchResults() {
 }
 function showSaved() {
     try {
+        gTab = 1;
         showSearchElements(false);
         hcMain.innerHTML = "";
         const hContainer = document.createElement("div");
@@ -277,10 +274,12 @@ function createRow(anime, saved) {
     return hRow;
 }
 function showSingle(anime) {
+    gTab = 2;
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
     hCard.anime = anime; // Store anime object for use in event handlers
+
     // Left
     const hLeft = document.createElement("div");
     // Save button
