@@ -34,6 +34,8 @@ document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 window.addEventListener("popstate", onHistoryChanged)
 
+document.querySelector("#btnTest").addEventListener("click", onTest);
+
 
 storage2model();
 showSaved();
@@ -168,6 +170,30 @@ function onRatingChange(e) {
 function onHistoryChanged(e) {
     console.log("history changed event");
     console.log(e);
+}
+async function onTest(e) {
+    try {
+        const json = await fetchJSON(API_URL_BASE + "anime/121");
+        console.log(json);
+        const jsondata = json.data;
+        const a = new Anime(
+            jsondata.mal_id,
+            jsondata.title,
+            jsondata.title_english,
+            jsondata.images.jpg.thumbnail_image_url,
+            jsondata.images.jpg.small_image_url,
+            jsondata.images.jpg.large_image_url,
+            jsondata.synopsis,
+            jsondata.genres,
+            jsondata.score,
+            true,
+            false,
+            0);
+        console.log(a);
+        gMyAnimes.push(a);
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 // +++ Other functions
