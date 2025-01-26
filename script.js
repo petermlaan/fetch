@@ -2,7 +2,7 @@
 // +++ Gobal constants
 const API_URL_BASE = "https://api.jikan.moe/v4/";
 const API_URL_SEARCH = "anime?sfw&q=";
-const URL_BASE = "./myanime/";
+const URL_BASE = "/myanime/";
 const LS_MODEL = "model";
 
 // +++ Global variables
@@ -32,6 +32,7 @@ hChkShowList.addEventListener("click", onShowList);
 document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
+window.addEventListener("popstate", onHistoryChanged)
 
 
 storage2model();
@@ -53,11 +54,25 @@ function onSearchTab(e) {
 }
 function onSavedTab(e) {
     e.preventDefault();
+    if (gTab !== 1) {
+        console.log("changing url to saved...");
+        const state = { additionalInformation: 'Updated the URL with JS' };
+        pushState("saved", state);
+        console.log(window.history);
+        gTab = 1;
+    }
     showSaved();
 }
 function onSingleTab(e) {
     e.preventDefault();
     const anime = e.target.anime;
+    if (gTab !== 2) {
+        console.log("changing url to single...");
+        const state = { additionalInformation: 'Updated the URL with JS' };
+        pushState("details?id=" + anime.id, state);
+        console.log(window.history);
+        gTab = 2;
+    }
     showSingle(anime);
 }
 function onShowList(e) {
@@ -150,6 +165,10 @@ function onRatingChange(e) {
     anime.myRating = e.target.value;
     model2storage();
 }
+function onHistoryChanged(e) {
+    console.log("history changed event");
+    console.log(e);
+}
 
 // +++ Other functions
 async function showSearchResults() {
@@ -166,7 +185,6 @@ async function showSearchResults() {
 }
 function showSaved() {
     try {
-        gTab = 1;
         showSearchElements(false);
         hcMain.innerHTML = "";
         const hContainer = document.createElement("div");
@@ -192,7 +210,6 @@ function showSaved() {
     }
 }
 function showSingle(anime) {
-    gTab = 2;
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
