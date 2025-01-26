@@ -50,7 +50,12 @@ function onSavedTab(e) {
 function onSingleTab(e) {
     e.preventDefault();
     gTab = 2;
-    showSingle(e.target.parentElement.value);
+
+    // Get the anime object (path depends on where the user clicked)
+    const parent = e.target.parentElement;
+    const anime =  parent.value ? parent.value : parent.parentElement.value;
+
+    showSingle(anime);
 }
 function onShowList(e) {
     if (gTab === 0)
@@ -195,10 +200,14 @@ function createCard(anime, saved) {
         hCard.appendChild(hWatched);
     }
     // Image
+    const hPosterLink = document.createElement("a");
+    hPosterLink.href = "#";
+    hPosterLink.addEventListener("click", onSingleTab);
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
     hPoster.classList.add("poster");
-    hCard.appendChild(hPoster);
+    hPosterLink.appendChild(hPoster);
+    hCard.appendChild(hPosterLink);
     // Title english
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en;
@@ -260,6 +269,7 @@ function createRow(anime, saved) {
     return hRow;
 }
 function showSingle(anime) {
+    console.log(anime);
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
@@ -272,16 +282,18 @@ function showSingle(anime) {
     hFav.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
     hLeft.appendChild(hFav);
     // Watched
-    const hWatchedLabel = document.createElement("label");
-    hWatchedLabel.innerText = "Har sett";
-    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-    hLeft.appendChild(hWatchedLabel);
-    const hWatched = document.createElement("input");
-    hWatched.type = "checkbox";
-    hWatched.id = `chkWatched${anime.id}`;
-    hWatched.checked = anime.watched;
-    hWatched.addEventListener("click", onSavedWatched);
-    hLeft.appendChild(hWatched);
+    if (anime.saved) {
+        const hWatchedLabel = document.createElement("label");
+        hWatchedLabel.innerText = "Har sett";
+        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+        hLeft.appendChild(hWatchedLabel);
+        const hWatched = document.createElement("input");
+        hWatched.type = "checkbox";
+        hWatched.id = `chkWatched${anime.id}`;
+        hWatched.checked = anime.watched;
+        hWatched.addEventListener("click", onSavedWatched);
+        hLeft.appendChild(hWatched);
+    }
     // Image
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
