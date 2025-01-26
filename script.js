@@ -1,16 +1,17 @@
 
 // +++ Gobal constants
-const URL_BASE = "https://api.jikan.moe/v4/";
-const URL_SEARCH = "anime?sfw&q=";
+const API_URL_BASE = "https://api.jikan.moe/v4/";
+const API_URL_SEARCH = "anime?sfw&q=";
+const URL_BASE = "./myanime/";
 const LS_MODEL = "model";
 
 // +++ Global variables
-let gMyAnimes = [];
+let gMyAnimes = []; // Saved animes
 let gSearchResults = [];
 let gFilterWatched = false;
-let gPage = 1;
-let gQuery = "";
-let gTab = 1; // 0 - search, 1 - saved, 2 - single
+let gPage = 1; // search pagination
+let gQuery = ""; // The latest search query
+let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
 
 // +++ Global html elements
 const hTxtQuery = document.querySelector("#txtQuery");
@@ -35,11 +36,19 @@ document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 
 storage2model();
 showSaved();
+pushState("");
 
 // +++ Event listeners
 function onSearchTab(e) {
     e.preventDefault();
     showSearchElements(true);
+    if (gTab !== 0) {
+        console.log("changing url to search tab...");
+        const state = { additionalInformation: 'Updated the URL with JS' };
+        pushState("search?q=" + gQuery, state);
+        console.log(window.history);
+        gTab = 0;
+    }
     showSearchResults();
 }
 function onSavedTab(e) {
@@ -60,12 +69,19 @@ function onShowList(e) {
 async function onSearch(e) {
     try {
         e.preventDefault();
+        const newQuery = document.querySelector("#txtQuery").value;
+        if (newQuery !== gQuery) {
+            console.log("changing url to new search query...");
+            const state = { additionalInformation: 'Updated the URL with JS' };
+            pushState("search?q=" + newQuery, state);
+            console.log(window.history);
+        }
         gPage = 1;
         const hForm = document.querySelector("#frmSearch");
         if (!hForm.reportValidity())
             return;
-        gQuery = document.querySelector("#txtQuery").value;
-        const json = await fetchJSON(URL_BASE + URL_SEARCH + `${gQuery}&page=${gPage}`);
+        gQuery = newQuery;
+        const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
         console.log(json);
         gSearchResults = [];
         for (const ja of json.data) {
@@ -137,15 +153,6 @@ function onRatingChange(e) {
 
 // +++ Other functions
 async function showSearchResults() {
-    if (gTab !== 0) {
-        console.log("changing url...");
-        const nextState = { additionalInformation: 'Updated the URL with JS' };
-        const nextURL = "./search?q=" + gQuery;
-        const nextTitle = 'My Anime - Search';
-        window.history.pushState(nextState, nextTitle, nextURL);
-        console.log(window.history);
-    }
-    gTab = 0;
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div"); // container for the cards
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
@@ -342,10 +349,8 @@ function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)
         gMyAnimes = JSON.parse(m);
-    console.log(gMyAnimes);
     if (!gMyAnimes)
         gMyAnimes = [];
-    console.log(gMyAnimes);
 }
 function model2storage() {
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
@@ -385,4 +390,20 @@ async function fetchJSON(url) {
         throw new Error(response);
     const data = await response.json();
     return data;
+}
+function pushState(urlend, state) {
+    const nextURL = URL_BASE + urlend;
+    let title = "My Anime -";
+    switch (gTab) {
+        case 0:
+            title += "Search";
+            break;
+        case 1:
+            title += "Saved";
+            break;
+        default:
+            title += "Details";
+            break;
+    }
+    window.history.pushState(state, title, nextURL);
 }
