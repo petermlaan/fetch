@@ -25,11 +25,12 @@ const hcMain = document.querySelector("#cMain");
 // +++ Add event listeners
 hBtnSearch.addEventListener("click", onSearch);
 hBtnNext.addEventListener("click", onNextPage);
+hBtnPrev.addEventListener("click", onPrevPage);
 hChkFilterWatched.addEventListener("click", onFilterWatched);
 hChkShowList.addEventListener("click", onShowList);
+document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
-document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 
 
 storage2model();
@@ -50,11 +51,8 @@ function onSavedTab(e) {
 function onSingleTab(e) {
     e.preventDefault();
     gTab = 2;
-
-    // Get the anime object (path depends on where the user clicked)
-    const parent = e.target.parentElement;
-    const anime =  parent.value ? parent.value : parent.parentElement.value;
-
+    console.log(e);
+    const anime = e.target.anime;
     showSingle(anime);
 }
 function onShowList(e) {
@@ -116,24 +114,28 @@ function onFilterWatched(e) {
     showSaved();
 }
 function onSavedAdd(e) {
-    const anime = e.target.parentElement.value;
+    const anime = e.target.anime;
     anime.saved = true;
     gMyAnimes.unshift(anime);
     model2storage();
-    e.target.parentElement.remove(); // remove the card/row
+    if (gTab !== 2)
+        e.target.parentElement.remove(); // remove the card/row
 }
 function onSavedRemove(e) {
-    const fav = e.target.parentElement.value;
-    gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === fav.id), 1);
+    console.log("saved remove");
+    console.log(e);
+    const anime = e.target.anime;
+    console.log(anime);
+    gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === anime.id), 1);
     model2storage();
     showSaved();
 }
 function onSavedWatched(e) {
-    e.target.parentElement.value.watched = !e.target.parentElement.value.watched;
+    e.target.anime.watched = !e.target.anime.watched;
     model2storage();
 }
 function onRatingChange(e) {
-    const anime = e.target.parentElement.value;
+    const anime = e.target.anime;
     anime.myRating = e.target.value;
     model2storage();
 }
@@ -180,12 +182,12 @@ function showSaved() {
 function createCard(anime, saved) {
     const hCard = document.createElement("article");
     hCard.classList.add("anime-card");
-    hCard.value = anime; // Store anime object for use in event handlers
     // Save button
-    const hFav = document.createElement("button");
-    hFav.innerText = saved ? "Ta bort" : "Spara";
-    hFav.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
-    hCard.appendChild(hFav);
+    const hSave = document.createElement("button");
+    hSave.innerText = saved ? "Ta bort" : "Spara";
+    hSave.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
+    hSave.anime = anime; // Store anime object for use in event handler
+    hCard.appendChild(hSave);
     // Watched
     if (saved) {
         const hWatchedLabel = document.createElement("label");
@@ -197,6 +199,7 @@ function createCard(anime, saved) {
         hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
+        hWatched.anime = anime; // Store anime object for use in event handler
         hCard.appendChild(hWatched);
     }
     // Image
@@ -205,6 +208,7 @@ function createCard(anime, saved) {
     hPosterLink.addEventListener("click", onSingleTab);
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
+    hPoster.anime = anime; // Needs to be on the img for some reason. Store anime object for use in event handler
     hPoster.classList.add("poster");
     hPosterLink.appendChild(hPoster);
     hCard.appendChild(hPosterLink);
@@ -222,13 +226,14 @@ function createCard(anime, saved) {
 function createRow(anime, saved) {
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
-    hRow.value = anime; // Store anime object for use in event handlers
+    hRow.anime = anime; // Store anime object for use in event handlers
 
     // Save / unsave
-    const hFav = document.createElement("button");
-    hFav.innerText = saved ? "Ta bort" : "Spara";
-    hFav.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
-    hRow.appendChild(hFav);
+    const hSave = document.createElement("button");
+    hSave.innerText = saved ? "Ta bort" : "Spara";
+    hSave.addEventListener("click", saved ? onSavedRemove : onSavedAdd);
+    hSave.anime = anime; // Store anime object for use in event handler
+    hRow.appendChild(hSave);
     // Watched
     if (saved) {
         const hWatched = document.createElement("input");
@@ -236,12 +241,14 @@ function createRow(anime, saved) {
         //hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
+        hWatched.anime = anime; // Store anime object for use in event handler
         hRow.appendChild(hWatched);
     }
     // My rating
     if (saved) {
         const hRating = document.createElement("select");
         hRating.addEventListener("change", onRatingChange);
+        hRating.anime = anime; // Store anime object for use in event handler
         for (let i = 0; i < 6; i++) {
             const hOption = document.createElement("option");
             if (i === 0) {
@@ -263,24 +270,25 @@ function createRow(anime, saved) {
     const hTitleEn = document.createElement("a");
     hTitleEn.href = "#";
     hTitleEn.addEventListener("click", onSingleTab);
+    hTitleEn.anime = anime; // Store anime object for use in event handler
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
     hRow.appendChild(hTitleEn);
 
     return hRow;
 }
 function showSingle(anime) {
-    console.log(anime);
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
-    hCard.value = anime; // Store anime object for use in event handlers
+    hCard.anime = anime; // Store anime object for use in event handlers
     // Left
     const hLeft = document.createElement("div");
     // Save button
-    const hFav = document.createElement("button");
-    hFav.innerText = anime.saved ? "Ta bort" : "Spara";
-    hFav.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
-    hLeft.appendChild(hFav);
+    const hSave = document.createElement("button");
+    hSave.innerText = anime.saved ? "Ta bort" : "Spara";
+    hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
+    hSave.anime = anime; // Store anime object for use in event handler
+    hLeft.appendChild(hSave);
     // Watched
     if (anime.saved) {
         const hWatchedLabel = document.createElement("label");
@@ -292,6 +300,7 @@ function showSingle(anime) {
         hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
+        hWatched.anime = anime; // Store anime object for use in event handler
         hLeft.appendChild(hWatched);
     }
     // Image
