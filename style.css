@@ -39,55 +39,57 @@ button {
     }
 }
 
+h1 {
+    font-family: "Style Script", serif;
+    font-style: normal;
+    position: absolute;
+    margin: 0;
+    line-height: 60px;
+    vertical-align: middle;
+}
+
 body {
     margin: 0;
 }
 
 header {
-    display: grid;
-    grid-template-columns: auto 1fr;
     background-color: var(--clr-main1);
     padding-left: 20px;
     margin-bottom: 10px;
+    height: 60px;
+}
 
-    .logo {
+#topmenu {
+    display: grid;
+    justify-content: center;
+    height: 100%;
+
+    height: 100%;
+
+    ul {
         display: flex;
-        align-items: center;
-
-        h1 {
-            font-family: "Style Script", serif;
-            font-style: normal;
-        }
-    }
-
-    #topmenu {
         height: 100%;
+        list-style: none;
+        margin: 0;
 
-        ul {
+        li {
             height: 100%;
             display: flex;
-            list-style: none;
-            margin: 0;
 
-            li {
+            a {
+                font-size: large;
+                font-weight: bold;
                 height: 100%;
+                padding: 0 20px;
                 display: flex;
+                align-items: center;
+            }
+
+            &:hover {
+                background-color: #6af;
 
                 a {
-                    font-size: large;
-                    font-weight: bold;
-                    height: 100%;
-                    padding: 0 20px;
-                    display: flex;
-                    align-items: center;
-                }
-
-                &:hover {
-                    background-color: #6af;
-
-                    a {
-                        color: #024;
-                    }
+                    color: #024;
                 }
             }
         }
