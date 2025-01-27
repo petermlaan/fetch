@@ -46,19 +46,15 @@ function onSearchTab(e) {
     e.preventDefault();
     showSearchElements(true);
     if (gTab !== 0) {
-        console.log("changing url to search tab...");
         gTab = 0;
         pushStateSearch(gQuery);
-        console.log(window.history);
     }
     showSearchResults();
 }
 function onSavedTab(e) {
     e.preventDefault();
     if (gTab !== 1) {
-        console.log("changing url to saved...");
         pushStateSaved();
-        console.log(window.history);
         gTab = 1;
     }
     showSaved();
@@ -67,10 +63,8 @@ function onSingleTab(e) {
     e.preventDefault();
     const anime = e.target.anime;
     if (gTab !== 2) {
-        console.log("changing url to single...");
         gTab = 2;
         pushStateSingle(anime.id);
-        console.log(window.history);
     }
     showSingle(anime);
 }
@@ -86,9 +80,7 @@ async function onSearch(e) {
         gPage = 1;
         const newQuery = document.querySelector("#txtQuery").value;
         if (newQuery !== gQuery) {
-            console.log("changing url to new search query...");
             pushStateSearch(newQuery);
-            console.log(window.history);
         }
         const hForm = document.querySelector("#frmSearch");
         if (!hForm.reportValidity())
@@ -150,7 +142,7 @@ function onRatingChange(e) {
     model2storage();
 }
 function onHistoryChanged(e) {
-    console.log("history changed event");
+    console.log("history changed event - state:");
     console.log(e.state);
     gTab = e.state.tab;
     switch (gTab) {
@@ -174,6 +166,7 @@ function onHistoryChanged(e) {
 async function onTest(e) {
     // Add some test data
     async function addAnime(id) {
+        console.log(id);
         const json = await fetchJSON(API_URL_BASE + "anime/" + id);
         const jsondata = json.data;
         const a = new Anime(
@@ -193,28 +186,16 @@ async function onTest(e) {
     }
     try {
         e.preventDefault();
-        gMyAnimes = [];
-        [1, 121, 431].forEach(async id => await addAnime(id));
-        /*await addAnime(121);
-        await addAnime(431);
-                await addAnime(813);
-                await addAnime(512);
-                await addAnime(32281);
-                await addAnime(1943);
-                await addAnime(21);
-                await addAnime(572);
-                await addAnime(523);
-                await addAnime(199);
-                addAnime(5114);
-                addAnime(164);
-                addAnime(1535);
-                addAnime(31964);
-                addAnime(40748);
-                addAnime(41467);
-                addAnime(38000);
-                addAnime(57334);
-                addAnime(16498);
-                addAnime(37521);*/
+        let added = 0;
+        const ids = [1, 121, 431, 813, 512, 32281, 1943, 21, 572, 523, 199, 5114, 164, 1535, 31964, 40748, 41467, 38000, 57334, 16498, 37521];
+        for (id of ids) {
+            if (!gMyAnimes.some(a => a.id === id)) {
+                await addAnime(id) 
+                added++; 
+            };
+            if (added > 4)
+                break;
+        }
         model2storage();
         gTab = 1;
         showSaved();
@@ -437,7 +418,6 @@ function showSearchElements(show) {
 }
 async function search() {
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
-    console.log(json);
     gSearchResults = [];
     for (const ja of json.data) {
         const a = new Anime(
@@ -469,7 +449,7 @@ function pushStateSaved() {
     const state = {
         tab: 1
     };
-    pushState("search?q=", state, "Saved");
+    pushState("saved", state, "Saved");
 }
 function pushStateSingle(id) {
     const state = {
@@ -484,6 +464,7 @@ function pushState(urlend, state, titleEnd) {
     console.log(state);
     window.history.pushState(state, title, nextURL);
 }
+
 
 // +++ Classes
 class Anime {

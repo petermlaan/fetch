@@ -124,11 +124,10 @@ header {
         width: 300px;
         height: 450px;
         object-fit: cover;
-        margin-top: 14px;
-        transition: scale 0.2s linear;
+        margin-top: 10px;
 
         &:hover {
-            scale: 1.05;
+            outline: 3px solid var(--clr-main3);
         }
     }
 }
