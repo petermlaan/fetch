@@ -261,31 +261,36 @@ function showSingle(anime) {
 
     // Left
     const hLeft = document.createElement("div");
+    hLeft.classList.add("single-left");
+    // Left top row
+    const hLeftTopRow = document.createElement("div");
+    hLeftTopRow.classList.add("single-left-toprow");
     // Close button
     const hClose = document.createElement("button");
     hClose.innerText = "Stäng";
     hClose.addEventListener("click", e => history.back());
-    hLeft.appendChild(hClose);
+    hLeftTopRow.appendChild(hClose);
     // Save button
     const hSave = document.createElement("button");
     hSave.innerText = anime.saved ? "Ta bort" : "Spara";
     hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
     hSave.anime = anime; // Store anime object for use in event handler
-    hLeft.appendChild(hSave);
+    hLeftTopRow.appendChild(hSave);
     // Watched
     if (anime.saved) {
         const hWatchedLabel = document.createElement("label");
         hWatchedLabel.innerText = "Har sett";
         hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-        hLeft.appendChild(hWatchedLabel);
+        hLeftTopRow.appendChild(hWatchedLabel);
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
         hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onSavedWatched);
         hWatched.anime = anime; // Store anime object for use in event handler
-        hLeft.appendChild(hWatched);
+        hLeftTopRow.appendChild(hWatched);
     }
+    hLeft.appendChild(hLeftTopRow);
     // Image
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;

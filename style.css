@@ -140,7 +140,23 @@ header {
     border: 1px solid var(--clr-main3);
     padding: 10px;
     width: auto;
+    padding: 9px;
     margin: 0 auto;
+
+    .single-left {
+        display: grid;
+
+        .single-left-toprow {
+            display: grid;
+            grid-template-columns: auto auto 1fr auto;
+            gap: 0.5rem;
+            margin-bottom: 10px;
+
+            :nth-child(3) {
+                text-align: end;
+            }
+        }
+    }
 
     .poster {
         width: 300px;
