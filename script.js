@@ -299,6 +299,20 @@ function showSingle(anime) {
     hCard.appendChild(hLeft);
     // Right
     const hRight = document.createElement("div");
+    // Top row
+    const hRightTopRow = document.createElement("div");
+    hRightTopRow.classList.add("single-right-toprow");
+    const hScore = document.createElement("span");
+    hScore.innerText = "Poäng: " + anime.score;
+    hRightTopRow.appendChild(hScore);
+    if (anime.saved) {
+        const hRatingLbl = document.createElement("label");
+        hRatingLbl.htmlFor = "rating";
+        hRatingLbl.innerText = "Betyg:";
+        hRightTopRow.appendChild(hRatingLbl);
+        hRightTopRow.appendChild(createRatingSelect(anime));
+    }
+    hRight.appendChild(hRightTopRow);
     // Title english
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en;
@@ -314,6 +328,24 @@ function showSingle(anime) {
     hCard.appendChild(hRight);
 
     hcMain.appendChild(hCard);
+}
+function createRatingSelect(anime) {
+    const hRating = document.createElement("select");
+    hRating.addEventListener("change", onRatingChange);
+    hRating.anime = anime; // Store anime object for use in event handler
+    for (let i = 0; i < 6; i++) {
+        const hOption = document.createElement("option");
+        if (i === 0) {
+            hOption.text = "";
+            hOption.value = 0;
+        } else {
+            hOption.text = i;
+            hOption.value = i;
+        }
+        hRating.appendChild(hOption);
+    }
+    hRating.selectedIndex = anime.myRating;
+    return hRating;
 }
 function createCard(anime) {
     // Returns a small card article element for the supplied anime object

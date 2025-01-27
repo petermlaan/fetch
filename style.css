@@ -86,10 +86,10 @@ header {
             }
 
             &:hover {
-                background-color: #6af;
+                background-color: var(--clr-main3);
 
                 a {
-                    color: #024;
+                    color: var(--clr-main0);
                 }
             }
         }
