@@ -6,11 +6,11 @@ const URL_BASE = "/myanime/";
 const LS_MODEL = "model";
 
 // +++ Global variables
-let gMyAnimes = []; // Saved animes
 let gSearchResults = [];
+let gMyAnimes = []; // Saved animes
 let gFilterWatched = false;
-let gPage = 1; // search pagination
 let gQuery = ""; // The latest search query
+let gPage = 1; // search pagination
 let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
 
 // +++ Global html elements
@@ -39,7 +39,7 @@ document.querySelector("#btnTest").addEventListener("click", onTest);
 
 storage2model();
 showSaved();
-pushState("");
+pushStateSaved();
 
 // +++ Event listeners
 function onSearchTab(e) {
@@ -47,10 +47,9 @@ function onSearchTab(e) {
     showSearchElements(true);
     if (gTab !== 0) {
         console.log("changing url to search tab...");
-        const state = { additionalInformation: 'Updated the URL with JS' };
-        pushState("search?q=" + gQuery, state);
-        console.log(window.history);
         gTab = 0;
+        pushStateSearch(gQuery);
+        console.log(window.history);
     }
     showSearchResults();
 }
@@ -58,8 +57,7 @@ function onSavedTab(e) {
     e.preventDefault();
     if (gTab !== 1) {
         console.log("changing url to saved...");
-        const state = { additionalInformation: 'Updated the URL with JS' };
-        pushState("saved", state);
+        pushStateSaved();
         console.log(window.history);
         gTab = 1;
     }
@@ -70,10 +68,9 @@ function onSingleTab(e) {
     const anime = e.target.anime;
     if (gTab !== 2) {
         console.log("changing url to single...");
-        const state = { additionalInformation: 'Updated the URL with JS' };
-        pushState("details?id=" + anime.id, state);
-        console.log(window.history);
         gTab = 2;
+        pushStateSingle(anime.id);
+        console.log(window.history);
     }
     showSingle(anime);
 }
@@ -86,39 +83,18 @@ function onShowList(e) {
 async function onSearch(e) {
     try {
         e.preventDefault();
+        gPage = 1;
         const newQuery = document.querySelector("#txtQuery").value;
         if (newQuery !== gQuery) {
             console.log("changing url to new search query...");
-            const state = { additionalInformation: 'Updated the URL with JS' };
-            pushState("search?q=" + newQuery, state);
+            pushStateSearch(newQuery);
             console.log(window.history);
         }
-        gPage = 1;
         const hForm = document.querySelector("#frmSearch");
         if (!hForm.reportValidity())
             return;
         gQuery = newQuery;
-        const json = await fetchJSONAsync(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
-        console.log(json);
-        gSearchResults = [];
-        for (const ja of json.data) {
-            const a = new Anime(
-                ja.mal_id,
-                ja.title,
-                ja.title_english,
-                ja.images.jpg.thumbnail_image_url,
-                ja.images.jpg.small_image_url,
-                ja.images.jpg.large_image_url,
-                ja.synopsis,
-                ja.genres,
-                ja.score,
-                false,
-                false,
-                0
-            );
-            gSearchResults.push(a);
-        }
-        showSearchResults();
+        await search();
     }
     catch (err) {
         console.error(e);
@@ -149,12 +125,18 @@ function onSavedAdd(e) {
     model2storage();
     if (gTab === 2)
         showSaved();
-    else
-        e.target.parentElement.remove(); // remove the card/row
+    else {
+        // remove the card/row
+        if (hChkShowList.checked)
+            e.target.parentElement.remove();
+        else
+            e.target.parentElement.parentElement.remove();
+        gSearchResults.splice(gSearchResults.findIndex(a => a.id === anime.id), 1);
+    }
 }
 function onSavedRemove(e) {
     const anime = e.target.anime;
-    gMyAnimes.splice(gMyAnimes.findIndex(i => i.id === anime.id), 1);
+    gMyAnimes.splice(gMyAnimes.findIndex(a => a.id === anime.id), 1);
     model2storage();
     showSaved();
 }
@@ -169,12 +151,30 @@ function onRatingChange(e) {
 }
 function onHistoryChanged(e) {
     console.log("history changed event");
-    console.log(e);
+    console.log(e.state);
+    gTab = e.state.tab;
+    switch (gTab) {
+        case 0:
+            gQuery = e.state.query;
+            showSearchElements(true);
+            if (gQuery)
+                search();
+            break;
+        case 1:
+            showSearchElements(false);
+            showSaved();
+            break;
+        case 2:
+            const anime = gMyAnimes.find(a => a.id === e.state.id);
+            if (anime)
+                showSingle(anime);
+            break;
+    }
 }
 async function onTest(e) {
     // Add some test data
     async function addAnime(id) {
-        const json = await fetchJSONAsync(API_URL_BASE + "anime/" + id);
+        const json = await fetchJSON(API_URL_BASE + "anime/" + id);
         const jsondata = json.data;
         const a = new Anime(
             jsondata.mal_id,
@@ -194,12 +194,11 @@ async function onTest(e) {
     try {
         e.preventDefault();
         gMyAnimes = [];
-        console.log("Is array? " + Array.isArray(gMyAnimes));
-        await addAnime(121);
+        [1, 121, 431].forEach(async id => await addAnime(id));
+        /*await addAnime(121);
         await addAnime(431);
-        /*        await addAnime(813);
+                await addAnime(813);
                 await addAnime(512);
-                await addAnime(1);
                 await addAnime(32281);
                 await addAnime(1943);
                 await addAnime(21);
@@ -237,7 +236,6 @@ async function showSearchResults() {
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
-
 function showSaved() {
     try {
         showSearchElements(false);
@@ -246,7 +244,9 @@ function showSaved() {
         hContainer.id = hChkShowList.checked ? "cListSaved" : "cCards";
         if (hChkShowList.checked) {
             const hTitleRow = document.createElement("div");
-            hTitleRow.innerHTML = "<span></span><span>Har sett</span><span>Betyg</span><span>Poäng</span><span>Titel</span>";
+            hTitleRow.innerHTML =
+                ["", "Har sett", "Betyg", "Poäng", "Titel"]
+                    .reduce((a, s) => a + `<span>${s}</span>`, "");
             hTitleRow.classList.add("title-row");
             hContainer.appendChild(hTitleRow);
         }
@@ -264,7 +264,6 @@ function showSaved() {
         console.error(e);
     }
 }
-
 function showSingle(anime) {
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
@@ -317,7 +316,6 @@ function showSingle(anime) {
 
     hcMain.appendChild(hCard);
 }
-
 function createCard(anime) {
     // Returns a small card article element for the supplied anime object
 
@@ -366,7 +364,6 @@ function createCard(anime) {
 
     return hCard;
 }
-
 function createRow(anime) {
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
@@ -420,7 +417,6 @@ function createRow(anime) {
 
     return hRow;
 }
-
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
     if (m !== null)
@@ -428,13 +424,9 @@ function storage2model() {
     if (!gMyAnimes)
         gMyAnimes = [];
 }
-
 function model2storage() {
-    console.log("model2storage: gMyAnimes");
-    console.log(gMyAnimes);
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
 }
-
 function showSearchElements(show) {
     hTxtQuery.hidden = !show;
     hBtnSearch.hidden = !show;
@@ -442,6 +434,55 @@ function showSearchElements(show) {
     hBtnNext.hidden = !show;
     hLblFilterWatched.hidden = show;
     hChkFilterWatched.hidden = show;
+}
+async function search() {
+    const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
+    console.log(json);
+    gSearchResults = [];
+    for (const ja of json.data) {
+        const a = new Anime(
+            ja.mal_id,
+            ja.title,
+            ja.title_english,
+            ja.images.jpg.thumbnail_image_url,
+            ja.images.jpg.small_image_url,
+            ja.images.jpg.large_image_url,
+            ja.synopsis,
+            ja.genres,
+            ja.score,
+            false,
+            false,
+            0
+        );
+        gSearchResults.push(a);
+    }
+    showSearchResults();
+}
+function pushStateSearch(query) {
+    const state = {
+        tab: 0,
+        query: query
+    };
+    pushState("search?q=", state, "Search");
+}
+function pushStateSaved() {
+    const state = {
+        tab: 1
+    };
+    pushState("search?q=", state, "Saved");
+}
+function pushStateSingle(id) {
+    const state = {
+        tab: 2,
+        id: id
+    };
+    pushState("search?q=", state, "Details");
+}
+function pushState(urlend, state, titleEnd) {
+    const nextURL = URL_BASE + urlend;
+    let title = "My Anime - " + titleEnd;
+    console.log(state);
+    window.history.pushState(state, title, nextURL);
 }
 
 // +++ Classes
@@ -463,43 +504,11 @@ class Anime {
 }
 
 // +++ Utility functions
-async function fetchJSONAsync(url) {
+async function fetchJSON(url) {
     console.log(url);
     const response = await fetch(url);
     if (!response.ok)
         throw new Error(response);
     const data = await response.json();
     return data;
-}
-
-function fetchJSON(url) {
-    console.log(url);
-    let ret = null;
-    fetch(url).then(response => {
-        if (!response.ok)
-            throw new Error(response);
-        return response.json();
-    }).then(data => {
-        ret = data;
-    }).catch(err => {
-        console.error(err);
-    });
-    return data;
-}
-
-function pushState(urlend, state) {
-    const nextURL = URL_BASE + urlend;
-    let title = "My Anime -";
-    switch (gTab) {
-        case 0:
-            title += "Search";
-            break;
-        case 1:
-            title += "Saved";
-            break;
-        default:
-            title += "Details";
-            break;
-    }
-    window.history.pushState(state, title, nextURL);
 }
