@@ -190,10 +190,10 @@ async function onTest(e) {
         const ids = [1, 121, 431, 813, 512, 32281, 1943, 21, 572, 523, 199, 5114, 164, 1535, 31964, 40748, 41467, 38000, 57334, 16498, 37521];
         for (id of ids) {
             if (!gMyAnimes.some(a => a.id === id)) {
-                await addAnime(id) 
-                added++; 
+                await addAnime(id)
+                added++;
             };
-            if (added > 4)
+            if (added > 3)
                 break;
         }
         model2storage();
@@ -207,8 +207,16 @@ async function onTest(e) {
 // +++ Other functions
 async function showSearchResults() {
     hcMain.innerHTML = ""; // clear the container
-    const hcCards = document.createElement("div"); // container for the cards
+    const hcCards = document.createElement("div");
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
+    if (hChkShowList.checked) {
+        const hTitleRow = document.createElement("div");
+        hTitleRow.innerHTML =
+            ["", "Poäng", "Titel"]
+                .reduce((a, s) => a + `<span>${s}</span>`, "");
+        hTitleRow.classList.add("title-row");
+        hcCards.appendChild(hTitleRow);
+    }
     for (const a of gSearchResults) {
         if (hChkShowList.checked)
             hcCards.appendChild(createRow(a));
@@ -253,6 +261,11 @@ function showSingle(anime) {
 
     // Left
     const hLeft = document.createElement("div");
+    // Close button
+    const hClose = document.createElement("button");
+    hClose.innerText = "Stäng";
+    hClose.addEventListener("click", e => history.back());
+    hLeft.appendChild(hClose);
     // Save button
     const hSave = document.createElement("button");
     hSave.innerText = anime.saved ? "Ta bort" : "Spara";
@@ -389,12 +402,14 @@ function createRow(anime) {
     hScore.innerText = anime.score;
     hRow.appendChild(hScore);
     // Title
+    const hTitleDiv = document.createElement("div");
     const hTitleEn = document.createElement("a");
     hTitleEn.href = "#";
     hTitleEn.addEventListener("click", onSingleTab);
     hTitleEn.anime = anime; // Store anime object for use in event handler
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
-    hRow.appendChild(hTitleEn);
+    hTitleDiv.appendChild(hTitleEn);
+    hRow.appendChild(hTitleDiv);
 
     return hRow;
 }
@@ -443,7 +458,7 @@ function pushStateSearch(query) {
         tab: 0,
         query: query
     };
-    pushState("search?q=", state, "Search");
+    pushState("search?q=" + query, state, "Search");
 }
 function pushStateSaved() {
     const state = {
@@ -464,7 +479,6 @@ function pushState(urlend, state, titleEnd) {
     console.log(state);
     window.history.pushState(state, title, nextURL);
 }
-
 
 // +++ Classes
 class Anime {

@@ -33,6 +33,7 @@ input {
 button {
     background-color: var(--clr-main3);
     color: var(--clr-main0);
+    font-weight: bold;
 
     &:hover {
         cursor: pointer;
@@ -152,12 +153,20 @@ header {
     display: grid;
     grid-template-columns: 4rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
+
+    & > div:nth-child(even) {
+        background-color: var(--clr-main1);
+    }
 }
 
 #cListSaved {
     display: grid;
     grid-template-columns: 4rem 5rem 3rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
+    
+    & > div:nth-child(even) {
+        background-color: var(--clr-main1);
+    }
 }
 
 .anime-row {
@@ -171,4 +180,5 @@ header {
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
     font-weight: bold;
+    border-bottom: 1px solid;
 }
