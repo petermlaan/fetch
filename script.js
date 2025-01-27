@@ -418,23 +418,9 @@ function createRow(anime) {
     }
     // My rating
     if (anime.saved) {
-        const hRating = document.createElement("select");
-        hRating.addEventListener("change", onRatingChange);
-        hRating.anime = anime; // Store anime object for use in event handler
-        for (let i = 0; i < 6; i++) {
-            const hOption = document.createElement("option");
-            if (i === 0) {
-                hOption.text = "";
-                hOption.value = 0;
-            } else {
-                hOption.text = i;
-                hOption.value = i;
-            }
-            hRating.appendChild(hOption);
-        }
-        hRating.selectedIndex = anime.myRating;
-        hRow.appendChild(hRating);
+        hRow.appendChild(createRatingSelect(anime));
     }
+    // Score
     const hScore = document.createElement("span");
     hScore.innerText = anime.score;
     hRow.appendChild(hScore);
