@@ -38,7 +38,7 @@ document.querySelector("#btnTest").addEventListener("click", onTest);
 
 
 storage2model();
-showSaved();
+m2vSaved();
 pushStateSaved();
 
 // +++ Event listeners
@@ -49,7 +49,7 @@ function onSearchTab(e) {
         gTab = 0;
         pushStateSearch(gQuery);
     }
-    showSearchResults();
+    m2vSearchResults();
 }
 function onSavedTab(e) {
     e.preventDefault();
@@ -57,7 +57,7 @@ function onSavedTab(e) {
         pushStateSaved();
         gTab = 1;
     }
-    showSaved();
+    m2vSaved();
 }
 function onSingleTab(e) {
     e.preventDefault();
@@ -66,13 +66,13 @@ function onSingleTab(e) {
         gTab = 2;
         pushStateSingle(anime.id);
     }
-    showSingle(anime);
+    m2vSingle(anime);
 }
 function onShowList(e) {
     if (gTab === 0)
-        showSearchResults();
+        m2vSearchResults();
     else
-        showSaved();
+        m2vSaved();
 }
 async function onSearch(e) {
     try {
@@ -96,19 +96,19 @@ async function onNextPage(e) {
     e.preventDefault();
     if (gQuery.length > 0) {
         gPage++;
-        showSearchResults();
+        m2vSearchResults();
     }
 }
 async function onPrevPage(e) {
     e.preventDefault();
     if (gPage > 1 && gQuery.length > 0) {
         gPage--;
-        showSearchResults();
+        m2vSearchResults();
     }
 }
 function onFilterWatched(e) {
     gFilterWatched = !gFilterWatched;
-    showSaved();
+    m2vSaved();
 }
 function onSavedAdd(e) {
     const anime = e.target.anime;
@@ -116,7 +116,7 @@ function onSavedAdd(e) {
     gMyAnimes.unshift(anime);
     model2storage();
     if (gTab === 2)
-        showSaved();
+        m2vSaved();
     else {
         // remove the card/row
         if (hChkShowList.checked)
@@ -130,7 +130,7 @@ function onSavedRemove(e) {
     const anime = e.target.anime;
     gMyAnimes.splice(gMyAnimes.findIndex(a => a.id === anime.id), 1);
     model2storage();
-    showSaved();
+    m2vSaved();
 }
 function onSavedWatched(e) {
     e.target.anime.watched = !e.target.anime.watched;
@@ -154,12 +154,12 @@ function onHistoryChanged(e) {
             break;
         case 1:
             showSearchElements(false);
-            showSaved();
+            m2vSaved();
             break;
         case 2:
             const anime = gMyAnimes.find(a => a.id === e.state.id);
             if (anime)
-                showSingle(anime);
+                m2vSingle(anime);
             break;
     }
 }
@@ -198,14 +198,14 @@ async function onTest(e) {
         }
         model2storage();
         gTab = 1;
-        showSaved();
+        m2vSaved();
     } catch (err) {
         console.error(err);
     }
 }
 
 // +++ Other functions
-async function showSearchResults() {
+async function m2vSearchResults() {
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div");
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
@@ -225,7 +225,7 @@ async function showSearchResults() {
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
-function showSaved() {
+function m2vSaved() {
     try {
         showSearchElements(false);
         hcMain.innerHTML = "";
@@ -253,7 +253,7 @@ function showSaved() {
         console.error(e);
     }
 }
-function showSingle(anime) {
+function m2vSingle(anime) {
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
@@ -388,6 +388,16 @@ function createCard(anime) {
     hPoster.classList.add("poster");
     hPosterLink.appendChild(hPoster);
     hCard.appendChild(hPosterLink);
+    // Genres
+    const hGenres = document.createElement("div");
+    hGenres.classList.add("card-genres");
+    for (const genre of anime.genres) {
+        const hGenre = document.createElement("div");
+        hGenre.classList.add("card-genre");
+        hGenre.innerText = genre.name;
+        hGenres.appendChild(hGenre);
+    }
+    hCard.appendChild(hGenres);
     // Title
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
@@ -474,7 +484,7 @@ async function search() {
         );
         gSearchResults.push(a);
     }
-    showSearchResults();
+    m2vSearchResults();
 }
 function pushStateSearch(query) {
     const state = {

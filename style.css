@@ -200,3 +200,19 @@ header {
     font-weight: bold;
     border-bottom: 1px solid;
 }
+
+.card-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 15px;
+    
+    .card-genre {
+        background-color: var(--clr-main3);
+        color: var(--clr-main0);
+        padding: 3px 5px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        border-radius: 1rem 1rem 1rem 1rem / 2rem 2rem 2rem 2rem;
+/*        border-radius: 20% 20% 20% 20% / 50% 50% 50% 50%;*/
+  }
+}
