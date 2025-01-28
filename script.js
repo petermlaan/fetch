@@ -228,7 +228,7 @@ async function search(query, page) {
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
     const res = [];
     for (const ja of json.data) {
-        const a = new Anime(
+        let a = new Anime(
             ja.mal_id,
             ja.title,
             ja.title_english,
@@ -242,11 +242,14 @@ async function search(query, page) {
             false,
             0
         );
+        const savedanime = gMyAnimes.find(b => b.id === a.id);
+        if (savedanime)
+            a = savedanime;
         res.push(a);
     }
     return res;
 }
-async function showSearchResults(searchResults) {
+async function showSearchResults(animes) {
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div");
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
@@ -258,9 +261,9 @@ async function showSearchResults(searchResults) {
         hTitleRow.classList.add("title-row");
         hcCards.appendChild(hTitleRow);
     }
-    for (const a of searchResults) {
+    for (const a of animes) {
         if (hChkShowList.checked)
-            hcCards.appendChild(createRow(a));
+            hcCards.appendChild(createRow(a, 0));
         else
             hcCards.appendChild(createCard(a));
     }
@@ -274,7 +277,7 @@ function showSaved(animes) {
         if (hChkShowList.checked) {
             const hTitleRow = document.createElement("div");
             hTitleRow.innerHTML =
-                ["", "Har sett", "Poäng", "Betyg", "Titel"]
+                ["", "Sedd", "Poäng", "Betyg", "Titel"]
                     .reduce((a, s) => a + `<span>${s}</span>`, "");
             hTitleRow.classList.add("title-row");
             hContainer.appendChild(hTitleRow);
@@ -282,7 +285,7 @@ function showSaved(animes) {
         for (const a of animes) {
             if (!gFilterWatched || !a.watched) {
                 if (hChkShowList.checked)
-                    hContainer.appendChild(createRow(a));
+                    hContainer.appendChild(createRow(a, 1));
                 else
                     hContainer.appendChild(createCard(a));
             };
@@ -319,7 +322,7 @@ function showSingle(anime) {
     // Watched
     if (anime.saved) {
         const hWatchedLabel = document.createElement("label");
-        hWatchedLabel.innerText = "Har sett";
+        hWatchedLabel.innerText = "Sedd";
         hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
         hLeftTopRow.appendChild(hWatchedLabel);
         const hWatched = document.createElement("input");
@@ -392,7 +395,7 @@ function createCard(anime) {
     // Watched
     if (anime.saved) {
         const hWatchedLabel = document.createElement("label");
-        hWatchedLabel.innerText = "Har sett";
+        hWatchedLabel.innerText = "Sedd";
         hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
         hTopRow.appendChild(hWatchedLabel);
         const hWatched = document.createElement("input");
@@ -425,19 +428,23 @@ function createCard(anime) {
 
     return hCard;
 }
-function createRow(anime) {
+function createRow(anime, tab) {
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
     hRow.anime = anime; // Store anime object for use in event handlers
 
     // Save / unsave
     const hSave = document.createElement("button");
-    hSave.innerText = anime.saved ? "Ta bort" : "Spara";
+    hSave.innerText = tab === 1 ? "Ta bort" : "Spara";
     hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
     hSave.anime = anime; // Store anime object for use in event handler
+    if (tab === 0 && anime.saved) {
+        hSave.disabled = true;
+        hSave.classList.add("disabled");
+    }
     hRow.appendChild(hSave);
     // Watched
-    if (anime.saved) {
+    if (tab === 1) {
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
         //hWatched.id = `chkWatched${anime.id}`;
@@ -451,7 +458,7 @@ function createRow(anime) {
     hScore.innerText = anime.score;
     hRow.appendChild(hScore);
     // My rating
-    if (anime.saved) {
+    if (tab === 1) {
         hRow.appendChild(createRatingSelect(anime));
     }
     // Title
