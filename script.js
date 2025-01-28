@@ -146,9 +146,8 @@ function onRatingChange(e) {
     model2storage();
 }
 function onHistoryChanged(e) {
-    console.log("history changed event - state:");
-    console.log(e.state);
     gTab = e.state.tab;
+    document.title = e.state.title;
     switch (gTab) {
         case 0:
             showSearchElements(true);
@@ -200,7 +199,7 @@ async function onTest(e) {
                 await addAnime(id)
                 added++;
             };
-            if (added > 3)
+            if (added > 1)
                 break;
         }
         model2storage();
@@ -321,8 +320,8 @@ function m2vSingle(anime) {
         const hRatingLbl = document.createElement("label");
         hRatingLbl.htmlFor = "rating";
         hRatingLbl.innerText = "Betyg:";
+        hRatingLbl.appendChild(createRatingSelect(anime));
         hRightTopRow.appendChild(hRatingLbl);
-        hRightTopRow.appendChild(createRatingSelect(anime));
     }
     hRight.appendChild(hRightTopRow);
     // Title english
@@ -507,25 +506,26 @@ function pushStateSearch(query) {
         tab: 0,
         query: query
     };
-    pushState("search?q=" + query, state, "Search");
+    pushState("search?q=" + query, state, "Sök");
 }
 function pushStateSaved() {
     const state = {
         tab: 1
     };
-    pushState("saved", state, "Saved");
+    pushState("saved", state, "Sparade");
 }
 function pushStateSingle(id) {
     const state = {
         tab: 2,
         id: id
     };
-    pushState("search?q=", state, "Details");
+    pushState("search?q=", state, "Detaljer");
 }
 function pushState(urlend, state, titleEnd) {
     const nextURL = URL_BASE + urlend;
-    let title = "My Anime - " + titleEnd;
-    console.log(state);
+    let title = "Mina Anime - " + titleEnd;
+    state.title = title;
+    document.title = title;
     window.history.pushState(state, title, nextURL);
 }
 

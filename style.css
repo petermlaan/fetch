@@ -147,8 +147,9 @@ header {
     margin: 0 auto;
 
     .single-left {
-        display: grid;
+        display: flex;
         gap: 0.5rem;
+        flex-direction: column;
 
         .single-left-toprow {
             display: grid;
@@ -159,6 +160,11 @@ header {
                 text-align: end;
             }
         }
+    }
+
+    .single-right-toprow {
+        display: flex;
+        gap: 0.5rem;
     }
 
     .poster {
