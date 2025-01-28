@@ -113,6 +113,10 @@ function onFilterWatched(e) {
 function onSavedAdd(e) {
     const anime = e.target.anime;
     anime.saved = true;
+    if (gMyAnimes.some(a => a.id === anime.id)) {
+        alert("Redan sparad");
+        return;
+    }
     gMyAnimes.unshift(anime);
     model2storage();
     if (gTab === 2)
@@ -147,9 +151,12 @@ function onHistoryChanged(e) {
     gTab = e.state.tab;
     switch (gTab) {
         case 0:
-            gQuery = e.state.query;
             showSearchElements(true);
-            if (gQuery)
+            const useOldSearchResults = gQuery === e.state.query;
+            gQuery = e.state.query;
+            if (useOldSearchResults)
+                m2vSearchResults();
+            else
                 search();
             break;
         case 1:
@@ -296,7 +303,12 @@ function m2vSingle(anime) {
     hPoster.src = anime.poster_s3;
     hPoster.classList.add("poster");
     hLeft.appendChild(hPoster);
+    // Genres
+    const hGenres = createGenreDivs(anime);
+    hLeft.appendChild(hGenres);
+
     hCard.appendChild(hLeft);
+    
     // Right
     const hRight = document.createElement("div");
     // Top row
@@ -388,7 +400,17 @@ function createCard(anime) {
     hPoster.classList.add("poster");
     hPosterLink.appendChild(hPoster);
     hCard.appendChild(hPosterLink);
+    // Title
+    const hTitleEn = document.createElement("h2");
+    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
+    hCard.appendChild(hTitleEn);
     // Genres
+    const hGenres = createGenreDivs(anime);
+    hCard.appendChild(hGenres);
+
+    return hCard;
+}
+function createGenreDivs(anime) {
     const hGenres = document.createElement("div");
     hGenres.classList.add("card-genres");
     for (const genre of anime.genres) {
@@ -397,13 +419,7 @@ function createCard(anime) {
         hGenre.innerText = genre.name;
         hGenres.appendChild(hGenre);
     }
-    hCard.appendChild(hGenres);
-    // Title
-    const hTitleEn = document.createElement("h2");
-    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
-    hCard.appendChild(hTitleEn);
-
-    return hCard;
+    return hGenres;
 }
 function createRow(anime) {
     const hRow = document.createElement("div");
