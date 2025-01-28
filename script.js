@@ -1,3 +1,4 @@
+import { fetchJSON } from "./util.js";
 
 // +++ Gobal constants
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -95,7 +96,7 @@ async function onSearch(e) {
         showSearchResults(gSearchResults);
     }
     catch (err) {
-        console.error(e);
+        console.error(err);
     }
 }
 async function onNextPage(e) {
@@ -225,7 +226,7 @@ async function onTest(e) {
 // +++ Other functions
 async function search(query, page) {
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
-    res = [];
+    const res = [];
     for (const ja of json.data) {
         const a = new Anime(
             ja.mal_id,
@@ -559,14 +560,4 @@ class Anime {
         this.watched = watched;
         this.myRating = myRating;
     }
-}
-
-// +++ Utility functions
-async function fetchJSON(url) {
-    console.log(url);
-    const response = await fetch(url);
-    if (!response.ok)
-        throw new Error(response.status);
-    const data = await response.json();
-    return data;
 }
