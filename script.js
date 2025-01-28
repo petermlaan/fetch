@@ -1,4 +1,4 @@
-import { fetchJSON } from "./util.js";
+import { fetchJSON, formatDecimalPlaces } from "./util.js";
 
 // #region Gobal constants
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -265,7 +265,7 @@ async function showSearchResults(animes) {
         if (hChkShowList.checked)
             hcCards.appendChild(createRow(a, 0));
         else
-            hcCards.appendChild(createCard(a));
+            hcCards.appendChild(createCard(a, 0));
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
@@ -286,7 +286,7 @@ function showSaved(animes) {
             if (hChkShowList.checked)
                 hContainer.appendChild(createRow(a, 1));
             else
-                hContainer.appendChild(createCard(a));
+                hContainer.appendChild(createCard(a, 1));
         };
     };
     hcMain.appendChild(hContainer);
@@ -355,7 +355,7 @@ function showSingle(anime) {
     const hRightTopRow = document.createElement("div");
     hRightTopRow.classList.add("single-right-toprow");
     const hScore = document.createElement("span");
-    hScore.innerText = "Poäng: " + anime.score;
+    hScore.innerText = "Poäng: " + formatDecimalPlaces(anime.score, 1);
     hRightTopRow.appendChild(hScore);
     if (anime.saved) {
         const hRatingLbl = document.createElement("label");
@@ -386,7 +386,7 @@ function showSingle(anime) {
 
     hcMain.appendChild(hCard);
 }
-function createCard(anime) {
+function createCard(anime, tab) {
     // Returns a small card article element for the supplied anime object
 
     const hCard = document.createElement("article");
@@ -397,10 +397,19 @@ function createCard(anime) {
     hTopRow.classList.add("card-toprow");
     // #region Save button
     const hSave = document.createElement("button");
-    hSave.innerText = anime.saved ? "Ta bort" : "Spara";
+    hSave.innerText = tab === 1 ? "Ta bort" : "Spara";
+    if (anime.saved && tab === 0) {
+        hSave.disabled = true;
+        hSave.classList.add("disabled");
+    }
     hSave.addEventListener("click", anime.saved ? onSavedRemove : onSavedAdd);
     hSave.anime = anime; // Store anime object for use in event handler
     hTopRow.appendChild(hSave);
+    // #endregion
+    // #region Score
+    const hScore = document.createElement("span");
+    hScore.innerText = "Poäng: " + formatDecimalPlaces(anime.score, 1);
+    hTopRow.appendChild(hScore);
     // #endregion
     // #region Watched
     if (anime.saved) {
@@ -419,6 +428,7 @@ function createCard(anime) {
     // #endregion
     hCard.appendChild(hTopRow);
     // #endregion
+
     // #region Image
     const hPosterLink = document.createElement("a");
     hPosterLink.href = "#";
@@ -430,11 +440,13 @@ function createCard(anime) {
     hPosterLink.appendChild(hPoster);
     hCard.appendChild(hPosterLink);
     // #endregion
+
     // #region Title
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
     hCard.appendChild(hTitleEn);
     // #endregion
+
     // #region Genres
     const hGenres = createGenreDivs(anime);
     hCard.appendChild(hGenres);
@@ -471,7 +483,7 @@ function createRow(anime, tab) {
     // #endregion
     // #region Score
     const hScore = document.createElement("span");
-    hScore.innerText = anime.score;
+    hScore.innerText = formatDecimalPlaces(anime.score, 1);
     hRow.appendChild(hScore);
     // #endregion
     // #region My rating
