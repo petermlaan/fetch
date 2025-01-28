@@ -49,7 +49,7 @@ h1 {
     font-family: "Style Script", serif;
     font-style: normal;
     position: absolute;
-    margin: 0;
+    margin: 0 0 0 20px;
     line-height: 60px;
     vertical-align: middle;
 }
@@ -64,7 +64,6 @@ body {
 
 header {
     background-color: var(--clr-main0);
-    padding-left: 20px;
     margin-bottom: 10px;
     height: 60px;
 }
@@ -74,13 +73,12 @@ header {
     justify-content: center;
     height: 100%;
 
-    height: 100%;
-
     ul {
         display: flex;
         height: 100%;
         list-style: none;
         margin: 0;
+        padding: 0;
 
         li {
             height: 100%;

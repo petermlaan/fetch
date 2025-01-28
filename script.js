@@ -207,7 +207,7 @@ async function onTest(e) {
         e.preventDefault();
         let added = 0;
         const ids = [1, 121, 431, 813, 512, 32281, 1943, 21, 572, 523, 199, 5114, 164, 1535, 31964, 40748, 41467, 38000, 57334, 16498, 37521];
-        for (id of ids) {
+        for (const id of ids) {
             if (!gMyAnimes.some(a => a.id === id)) {
                 await addAnime(id)
                 added++;
