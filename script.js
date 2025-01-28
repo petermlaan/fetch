@@ -103,16 +103,18 @@ async function onSearch(e) {
 }
 async function onNextPage(e) {
     e.preventDefault();
-    if (gQuery.length > 0) {
+    if (gQuery) {
         gPage++;
-        showSearchResults();
+        gSearchResults = await search(gQuery, gPage);
+        showSearchResults(gSearchResults);
     }
 }
 async function onPrevPage(e) {
     e.preventDefault();
-    if (gPage > 1 && gQuery.length > 0) {
+    if (gPage > 1 && gQuery) {
         gPage--;
-        showSearchResults();
+        gSearchResults = await search(gQuery, gPage);
+        showSearchResults(gSearchResults);
     }
 }
 function onFilterWatched(e) {
