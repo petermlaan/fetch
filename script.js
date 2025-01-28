@@ -340,24 +340,6 @@ function m2vSingle(anime) {
 
     hcMain.appendChild(hCard);
 }
-function createRatingSelect(anime) {
-    const hRating = document.createElement("select");
-    hRating.addEventListener("change", onRatingChange);
-    hRating.anime = anime; // Store anime object for use in event handler
-    for (let i = 0; i < 6; i++) {
-        const hOption = document.createElement("option");
-        if (i === 0) {
-            hOption.text = "";
-            hOption.value = 0;
-        } else {
-            hOption.text = i;
-            hOption.value = i;
-        }
-        hRating.appendChild(hOption);
-    }
-    hRating.selectedIndex = anime.myRating;
-    return hRating;
-}
 function createCard(anime) {
     // Returns a small card article element for the supplied anime object
 
@@ -409,17 +391,6 @@ function createCard(anime) {
 
     return hCard;
 }
-function createGenreDivs(anime) {
-    const hGenres = document.createElement("div");
-    hGenres.classList.add("card-genres");
-    for (const genre of anime.genres) {
-        const hGenre = document.createElement("div");
-        hGenre.classList.add("card-genre");
-        hGenre.innerText = genre.name;
-        hGenres.appendChild(hGenre);
-    }
-    return hGenres;
-}
 function createRow(anime) {
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
@@ -460,6 +431,35 @@ function createRow(anime) {
     hRow.appendChild(hTitleDiv);
 
     return hRow;
+}
+function createRatingSelect(anime) {
+    const hRating = document.createElement("select");
+    hRating.addEventListener("change", onRatingChange);
+    hRating.anime = anime; // Store anime object for use in event handler
+    for (let i = 0; i < 11; i++) {
+        const hOption = document.createElement("option");
+        if (i === 0) {
+            hOption.text = "";
+            hOption.value = 0;
+        } else {
+            hOption.text = i;
+            hOption.value = i;
+        }
+        hRating.appendChild(hOption);
+    }
+    hRating.selectedIndex = anime.myRating;
+    return hRating;
+}
+function createGenreDivs(anime) {
+    const hGenres = document.createElement("div");
+    hGenres.classList.add("card-genres");
+    for (const genre of anime.genres) {
+        const hGenre = document.createElement("div");
+        hGenre.classList.add("card-genre");
+        hGenre.innerText = genre.name;
+        hGenres.appendChild(hGenre);
+    }
+    return hGenres;
 }
 function storage2model() {
     const m = localStorage.getItem(LS_MODEL);
