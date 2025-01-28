@@ -41,7 +41,7 @@ document.querySelector("#btnTest").addEventListener("click", onTest);
 
 storage2model();
 showHideElements(gTab);
-m2vSaved();
+showSaved(gMyAnimes);
 pushStateSaved();
 
 // +++ Event listeners
@@ -52,7 +52,7 @@ function onSearchTab(e) {
         pushStateSearch(gQuery);
     }
     showHideElements(gTab);
-    m2vSearchResults();
+    showSearchResults(gSearchResults);
 }
 function onSavedTab(e) {
     e.preventDefault();
@@ -61,7 +61,7 @@ function onSavedTab(e) {
         gTab = 1;
     }
     showHideElements(gTab);
-    m2vSaved();
+    showSaved(gMyAnimes);
 }
 function onSingleTab(e) {
     e.preventDefault();
@@ -71,13 +71,13 @@ function onSingleTab(e) {
         pushStateSingle(anime.id);
     }
     showHideElements(gTab);
-    m2vSingle(anime);
+    showSingle(anime);
 }
 function onShowList(e) {
     if (gTab === 0)
-        m2vSearchResults();
+        showSearchResults(gSearchResults);
     else
-        m2vSaved();
+        showSaved(gMyAnimes);
 }
 async function onSearch(e) {
     try {
@@ -91,7 +91,8 @@ async function onSearch(e) {
         if (!hForm.reportValidity())
             return;
         gQuery = newQuery;
-        await search(gQuery, gPage);
+        gSearchResults = await search(gQuery, gPage);
+        showSearchResults(gSearchResults);
     }
     catch (err) {
         console.error(e);
@@ -101,19 +102,19 @@ async function onNextPage(e) {
     e.preventDefault();
     if (gQuery.length > 0) {
         gPage++;
-        m2vSearchResults();
+        showSearchResults();
     }
 }
 async function onPrevPage(e) {
     e.preventDefault();
     if (gPage > 1 && gQuery.length > 0) {
         gPage--;
-        m2vSearchResults();
+        showSearchResults();
     }
 }
 function onFilterWatched(e) {
     gFilterWatched = !gFilterWatched;
-    m2vSaved();
+    showSaved(gMyAnimes);
 }
 function onSavedAdd(e) {
     const anime = e.target.anime;
@@ -125,7 +126,7 @@ function onSavedAdd(e) {
     gMyAnimes.unshift(anime);
     model2storage();
     if (gTab === 2)
-        m2vSaved();
+        showSaved(gMyAnimes);
     else {
         // remove the card/row
         if (hChkShowList.checked)
@@ -139,7 +140,7 @@ function onSavedRemove(e) {
     const anime = e.target.anime;
     gMyAnimes.splice(gMyAnimes.findIndex(a => a.id === anime.id), 1);
     model2storage();
-    m2vSaved();
+    showSaved(gMyAnimes);
 }
 function onSavedWatched(e) {
     e.target.anime.watched = !e.target.anime.watched;
@@ -151,27 +152,32 @@ function onRatingChange(e) {
     model2storage();
 }
 async function onHistoryChanged(e) {
-    gTab = e.state.tab;
     document.title = e.state.title;
+    gTab = e.state.tab;
     switch (gTab) {
         case 0:
             showHideElements(gTab);
             const useOldSearchResults = gQuery === e.state.query;
             gQuery = e.state.query;
             if (useOldSearchResults)
-                m2vSearchResults();
-            else
-                await search(gQuery, gPage);
+                showSearchResults(gSearchResults);
+            else {
+                if (gQuery)
+                    gSearchResults = await search(gQuery, gPage);
+                else
+                    gSearchResults = [];
+                showSearchResults(gSearchResults);
+            }
             break;
         case 1:
             showHideElements(gTab);
-            m2vSaved();
+            showSaved(gMyAnimes);
             break;
         case 2:
             showHideElements(gTab);
             const anime = gMyAnimes.find(a => a.id === e.state.id);
             if (anime)
-                m2vSingle(anime);
+                showSingle(anime);
             break;
     }
 }
@@ -210,7 +216,7 @@ async function onTest(e) {
         }
         model2storage();
         gTab = 1;
-        m2vSaved();
+        showSaved(gMyAnimes);
     } catch (err) {
         console.error(err);
     }
@@ -219,7 +225,7 @@ async function onTest(e) {
 // +++ Other functions
 async function search(query, page) {
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
-    gSearchResults = [];
+    res = [];
     for (const ja of json.data) {
         const a = new Anime(
             ja.mal_id,
@@ -235,11 +241,11 @@ async function search(query, page) {
             false,
             0
         );
-        gSearchResults.push(a);
+        res.push(a);
     }
-    m2vSearchResults();
+    return res;
 }
-async function m2vSearchResults() {
+async function showSearchResults(searchResults) {
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div");
     hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
@@ -251,7 +257,7 @@ async function m2vSearchResults() {
         hTitleRow.classList.add("title-row");
         hcCards.appendChild(hTitleRow);
     }
-    for (const a of gSearchResults) {
+    for (const a of searchResults) {
         if (hChkShowList.checked)
             hcCards.appendChild(createRow(a));
         else
@@ -259,7 +265,7 @@ async function m2vSearchResults() {
     }
     hcMain.appendChild(hcCards); // Add cards to html page
 }
-function m2vSaved() {
+function showSaved(animes) {
     try {
         hcMain.innerHTML = "";
         const hContainer = document.createElement("div");
@@ -272,7 +278,7 @@ function m2vSaved() {
             hTitleRow.classList.add("title-row");
             hContainer.appendChild(hTitleRow);
         }
-        for (const a of gMyAnimes) {
+        for (const a of animes) {
             if (!gFilterWatched || !a.watched) {
                 if (hChkShowList.checked)
                     hContainer.appendChild(createRow(a));
@@ -286,7 +292,7 @@ function m2vSaved() {
         console.error(e);
     }
 }
-function m2vSingle(anime) {
+function showSingle(anime) {
     hcMain.innerHTML = "";
     const hCard = document.createElement("article");
     hCard.classList.add("single-card");
@@ -334,7 +340,7 @@ function m2vSingle(anime) {
     hLeft.appendChild(hGenres);
 
     hCard.appendChild(hLeft);
-    
+
     // Right
     const hRight = document.createElement("div");
     // Top row
