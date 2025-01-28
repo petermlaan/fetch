@@ -534,7 +534,7 @@ function pushStateSingle(id) {
         tab: 2,
         id: id
     };
-    pushState("search?q=", state, "Detaljer");
+    pushState("details/" + id, state, "Detaljer");
 }
 function pushState(urlend, state, titleEnd) {
     const nextURL = URL_BASE + urlend;
