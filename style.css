@@ -53,7 +53,7 @@ body {
 }
 
 header {
-    background-color: var(--clr-main1);
+    background-color: var(--clr-main0);
     padding-left: 20px;
     margin-bottom: 10px;
     height: 60px;

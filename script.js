@@ -20,7 +20,9 @@ const hBtnNext = document.querySelector("#btnNextPage");
 const hBtnPrev = document.querySelector("#btnPrevPage");
 const hChkFilterWatched = document.querySelector("#chkFilterWatched");
 const hLblFilterWatched = document.querySelector("#lblFilterWatched");
+const hLblShowList = document.querySelector("#lblShowList");
 const hChkShowList = document.querySelector("#chkShowList");
+const hTest = document.querySelector("#btnTest");
 const hcMain = document.querySelector("#cMain");
 
 // +++ Add event listeners
@@ -38,17 +40,18 @@ document.querySelector("#btnTest").addEventListener("click", onTest);
 
 
 storage2model();
+showHideElements(gTab);
 m2vSaved();
 pushStateSaved();
 
 // +++ Event listeners
 function onSearchTab(e) {
     e.preventDefault();
-    showSearchElements(true);
     if (gTab !== 0) {
         gTab = 0;
         pushStateSearch(gQuery);
     }
+    showHideElements(gTab);
     m2vSearchResults();
 }
 function onSavedTab(e) {
@@ -57,6 +60,7 @@ function onSavedTab(e) {
         pushStateSaved();
         gTab = 1;
     }
+    showHideElements(gTab);
     m2vSaved();
 }
 function onSingleTab(e) {
@@ -66,6 +70,7 @@ function onSingleTab(e) {
         gTab = 2;
         pushStateSingle(anime.id);
     }
+    showHideElements(gTab);
     m2vSingle(anime);
 }
 function onShowList(e) {
@@ -86,7 +91,7 @@ async function onSearch(e) {
         if (!hForm.reportValidity())
             return;
         gQuery = newQuery;
-        await search();
+        await search(gQuery, gPage);
     }
     catch (err) {
         console.error(e);
@@ -145,24 +150,25 @@ function onRatingChange(e) {
     anime.myRating = e.target.value;
     model2storage();
 }
-function onHistoryChanged(e) {
+async function onHistoryChanged(e) {
     gTab = e.state.tab;
     document.title = e.state.title;
     switch (gTab) {
         case 0:
-            showSearchElements(true);
+            showHideElements(gTab);
             const useOldSearchResults = gQuery === e.state.query;
             gQuery = e.state.query;
             if (useOldSearchResults)
                 m2vSearchResults();
             else
-                search();
+                await search(gQuery, gPage);
             break;
         case 1:
-            showSearchElements(false);
+            showHideElements(gTab);
             m2vSaved();
             break;
         case 2:
+            showHideElements(gTab);
             const anime = gMyAnimes.find(a => a.id === e.state.id);
             if (anime)
                 m2vSingle(anime);
@@ -211,6 +217,28 @@ async function onTest(e) {
 }
 
 // +++ Other functions
+async function search(query, page) {
+    const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
+    gSearchResults = [];
+    for (const ja of json.data) {
+        const a = new Anime(
+            ja.mal_id,
+            ja.title,
+            ja.title_english,
+            ja.images.jpg.thumbnail_image_url,
+            ja.images.jpg.small_image_url,
+            ja.images.jpg.large_image_url,
+            ja.synopsis,
+            ja.genres,
+            ja.score,
+            false,
+            false,
+            0
+        );
+        gSearchResults.push(a);
+    }
+    m2vSearchResults();
+}
 async function m2vSearchResults() {
     hcMain.innerHTML = ""; // clear the container
     const hcCards = document.createElement("div");
@@ -233,14 +261,13 @@ async function m2vSearchResults() {
 }
 function m2vSaved() {
     try {
-        showSearchElements(false);
         hcMain.innerHTML = "";
         const hContainer = document.createElement("div");
         hContainer.id = hChkShowList.checked ? "cListSaved" : "cCards";
         if (hChkShowList.checked) {
             const hTitleRow = document.createElement("div");
             hTitleRow.innerHTML =
-                ["", "Har sett", "Betyg", "Poäng", "Titel"]
+                ["", "Har sett", "Poäng", "Betyg", "Titel"]
                     .reduce((a, s) => a + `<span>${s}</span>`, "");
             hTitleRow.classList.add("title-row");
             hContainer.appendChild(hTitleRow);
@@ -412,14 +439,14 @@ function createRow(anime) {
         hWatched.anime = anime; // Store anime object for use in event handler
         hRow.appendChild(hWatched);
     }
-    // My rating
-    if (anime.saved) {
-        hRow.appendChild(createRatingSelect(anime));
-    }
     // Score
     const hScore = document.createElement("span");
     hScore.innerText = anime.score;
     hRow.appendChild(hScore);
+    // My rating
+    if (anime.saved) {
+        hRow.appendChild(createRatingSelect(anime));
+    }
     // Title
     const hTitleDiv = document.createElement("div");
     const hTitleEn = document.createElement("a");
@@ -471,35 +498,16 @@ function storage2model() {
 function model2storage() {
     localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
 }
-function showSearchElements(show) {
-    hTxtQuery.hidden = !show;
-    hBtnSearch.hidden = !show;
-    hBtnPrev.hidden = !show;
-    hBtnNext.hidden = !show;
-    hLblFilterWatched.hidden = show;
-    hChkFilterWatched.hidden = show;
-}
-async function search() {
-    const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${gQuery}&page=${gPage}`);
-    gSearchResults = [];
-    for (const ja of json.data) {
-        const a = new Anime(
-            ja.mal_id,
-            ja.title,
-            ja.title_english,
-            ja.images.jpg.thumbnail_image_url,
-            ja.images.jpg.small_image_url,
-            ja.images.jpg.large_image_url,
-            ja.synopsis,
-            ja.genres,
-            ja.score,
-            false,
-            false,
-            0
-        );
-        gSearchResults.push(a);
-    }
-    m2vSearchResults();
+function showHideElements(tab) {
+    hTxtQuery.hidden = tab !== 0;
+    hBtnSearch.hidden = tab !== 0;
+    hBtnPrev.hidden = tab !== 0;
+    hBtnNext.hidden = tab !== 0;
+    hLblFilterWatched.hidden = tab !== 1;
+    hChkFilterWatched.hidden = tab !== 1;
+    hLblShowList.hidden = tab === 2;
+    hChkShowList.hidden = tab === 2;
+    hTest.hidden = tab === 2;
 }
 function pushStateSearch(query) {
     const state = {
@@ -552,7 +560,7 @@ async function fetchJSON(url) {
     console.log(url);
     const response = await fetch(url);
     if (!response.ok)
-        throw new Error(response);
+        throw new Error(response.status);
     const data = await response.json();
     return data;
 }
