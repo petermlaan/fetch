@@ -225,7 +225,7 @@ header {
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4rem 3rem 3rem 3rem 1fr;
+    grid-template-columns: 4rem 2.5rem 3.5rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 
     button, select, input {

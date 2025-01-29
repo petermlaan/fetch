@@ -1,6 +1,6 @@
 import { fetchJSON, formatDecimalPlaces } from "./util.js";
 
-// #region Gobal constants
+// #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
 const API_URL_SEARCH = "anime?sfw&q="; // add query and optionally page=x
 const API_URL_ANIME = "anime/"; // fetch a single anime by id
@@ -8,7 +8,7 @@ const URL_BASE = "/myanime/"; // Our url when state pushing
 const LS_MODEL = "model"; // local storage key
 // #endregion
 
-// #region Global variables
+// #region ----- Global variables       ----- 
 let gSearchResults = []; // Last search result
 let gMyAnimes = []; // Saved animes
 let gQuery = ""; // The latest search query
@@ -19,7 +19,7 @@ let gRatingSort = true;
 let gScoreSort = true;
 // #endregion
 
-// #region Global html elements
+// #region ----- Global html elements   ----- 
 const hTxtQuery = document.querySelector("#txtQuery");
 const hBtnSearch = document.querySelector("#btnSearch");
 const hBtnNext = document.querySelector("#btnNextPage");
@@ -32,7 +32,7 @@ const hTest = document.querySelector("#btnTest");
 const hMain = document.querySelector("#cMain");
 // #endregion
 
-// #region Add event listeners
+// #region ----- Add event listeners    ----- 
 hBtnSearch.addEventListener("click", onSearch);
 hBtnNext.addEventListener("click", onNextPage);
 hBtnPrev.addEventListener("click", onPrevPage);
@@ -48,7 +48,7 @@ window.addEventListener("popstate", onHistoryChanged)
 gMyAnimes = loadMyAnimes();
 showSaved(gMyAnimes);
 
-// #region Event listeners
+// #region ----- Event listeners        ----- 
 function onSearchTab(e) {
     e.preventDefault();
     if (gTab !== 0) {
@@ -272,7 +272,7 @@ async function onTest(e) {
 }
 // #endregion
 
-// #region Other functions
+// #region ----- Other functions        ----- 
 async function search(query, page) {
     // Sends a search query to the API and returns an array of anime objects.
     // Also disables or enables next and prev page buttons.
@@ -334,8 +334,8 @@ async function showSearchResults(animes) {
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
         hTitleRow.innerHTML = [["", 0], ["Poäng", 1], ["Titel", 2]]
-            .reduce((a, [s, c]) => a + `<a href="#" col="${c}">${s}</a>`, "");
-        hTitleRow.childNodes.forEach(n => n.addEventListener("click", onTitle));
+            .reduce((a, [s, c]) => a + `<div><a href="#" col="${c}">${s}</a></div>`, "");
+        hTitleRow.childNodes.forEach(n => n.firstChild.addEventListener("click", onTitle));
         hTitleRow.classList.add("title-row");
         hCards.appendChild(hTitleRow);
     }
@@ -358,8 +358,8 @@ function showSaved(animes) {
         const hTitleRow = document.createElement("div");
         hTitleRow.innerHTML = // col us used in onTitle for sorting
             [["", 0], ["Sedd", 1], ["Poäng", 2], ["Betyg", 3], ["Titel", 4]]
-                .reduce((a, [s, c]) => a + `<a href="#" col="${c}">${s}</a>`, "");
-        hTitleRow.childNodes.forEach(n => n.addEventListener("click", onTitle));
+                .reduce((a, [s, c]) => a + `<div><a href="#" col="${c}">${s}</a></div>`, "");
+        hTitleRow.childNodes.forEach(n => n.firstChild.addEventListener("click", onTitle));
         hTitleRow.classList.add("title-row");
         hContainer.appendChild(hTitleRow);
     }
@@ -710,7 +710,7 @@ function pushState(urlend, state, titleEnd) {
 }
 // #endregion
 
-// #region Classes
+// #region ----- Classes                ----- 
 class Anime {
     constructor(
         id, title, title_en, poster_s1, poster_s2, poster_s3,
