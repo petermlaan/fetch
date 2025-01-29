@@ -5,7 +5,7 @@ const API_URL_BASE = "https://api.jikan.moe/v4/";
 const API_URL_SEARCH = "anime?sfw&q=";
 const API_URL_ANIME = "anime/";
 const URL_BASE = "/myanime/";
-const LS_MODEL = "model";
+const LS_MODEL = "model"; // local storage key
 // #endregion
 
 // #region Global variables
@@ -36,17 +36,15 @@ hBtnNext.addEventListener("click", onNextPage);
 hBtnPrev.addEventListener("click", onPrevPage);
 hChkFilterWatched.addEventListener("click", onFilterWatched);
 hChkShowList.addEventListener("click", onShowList);
+hTest.addEventListener("click", onTest);
 document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
-document.querySelector("#btnTest").addEventListener("click", onTest);
 window.addEventListener("popstate", onHistoryChanged)
 // #endregion
 
-storage2model();
-showHideElements(gTab);
+gMyAnimes = loadMyAnimes();
 showSaved(gMyAnimes);
-pushStateSaved();
 
 // #region Event listeners
 function onSearchTab(e) {
@@ -132,7 +130,7 @@ function onSavedAdd(e) {
         return;
     }
     gMyAnimes.unshift(anime);
-    model2storage();
+    storeMyAnimes(gMyAnimes);
     if (gTab === 2)
         showSaved(gMyAnimes);
     else {
@@ -147,17 +145,17 @@ function onSavedAdd(e) {
 function onSavedRemove(e) {
     const anime = e.target.anime;
     gMyAnimes.splice(gMyAnimes.findIndex(a => a.id === anime.id), 1);
-    model2storage();
+    storeMyAnimes(gMyAnimes);
     showSaved(gMyAnimes);
 }
 function onSavedWatched(e) {
     e.target.anime.watched = !e.target.anime.watched;
-    model2storage();
+    storeMyAnimes(gMyAnimes);
 }
 function onRatingChange(e) {
     const anime = e.target.anime;
     anime.myRating = e.target.value;
-    model2storage();
+    storeMyAnimes(gMyAnimes);
 }
 async function onHistoryChanged(e) {
     document.title = e.state.title;
@@ -223,7 +221,7 @@ async function onTest(e) {
             if (added > 1)
                 break;
         }
-        model2storage();
+        storeMyAnimes(gMyAnimes);
         gTab = 1;
         showSaved(gMyAnimes);
     } catch (err) {
@@ -576,7 +574,7 @@ function showHideElements(tab) {
     hChkShowList.hidden = tab === 2;
     hTest.hidden = tab === 2;
 }
-function disableNextPrev({has_next_page, current_page}) {
+function disableNextPrev({ has_next_page, current_page }) {
     // Next page button
     if (has_next_page) {
         hBtnNext.disabled = false;
@@ -594,15 +592,16 @@ function disableNextPrev({has_next_page, current_page}) {
         hBtnPrev.classList.add("disabled");
     }
 }
-function storage2model() {
+function loadMyAnimes() {
+    let res = [];
     const m = localStorage.getItem(LS_MODEL);
-    if (m !== null)
-        gMyAnimes = JSON.parse(m);
-    if (!gMyAnimes)
-        gMyAnimes = [];
+    res = m ? JSON.parse(m) : [];
+    if (!res)
+        res = [];
+    return res;
 }
-function model2storage() {
-    localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
+function storeMyAnimes(animes) {
+    localStorage.setItem(LS_MODEL, JSON.stringify(animes));
 }
 function pushStateSearch(query, page) {
     const state = {
@@ -616,7 +615,7 @@ function pushStateSaved() {
     const state = {
         tab: 1
     };
-    pushState("saved", state, "Sparade");
+    pushState("", state, "Sparade");
 }
 function pushStateSingle(id) {
     const state = {
