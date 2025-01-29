@@ -27,7 +27,7 @@ const hLblFilterWatched = document.querySelector("#lblFilterWatched");
 const hLblShowList = document.querySelector("#lblShowList");
 const hChkShowList = document.querySelector("#chkShowList");
 const hTest = document.querySelector("#btnTest");
-const hcMain = document.querySelector("#cMain");
+const hMain = document.querySelector("#cMain");
 // #endregion
 
 // #region Add event listeners
@@ -158,6 +158,13 @@ function onRatingChange(e) {
     storeMyAnimes(gMyAnimes);
 }
 async function onHistoryChanged(e) {
+    if (!e.state) {
+        gTab = 1;
+        showHideElements(gTab);
+        showSaved(gMyAnimes);
+        document.title = "Mina Anime";
+        return;
+    }
     document.title = e.state.title;
     gTab = e.state.tab;
     showHideElements(gTab);
@@ -232,6 +239,8 @@ async function onTest(e) {
 
 // #region Other functions
 async function search(query, page) {
+    // Sends a search query to the API and returns an array of anime objects.
+    // Also disables or enables next and prev page buttons.
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
     console.log(json);
     const res = [];
@@ -259,6 +268,7 @@ async function search(query, page) {
     return res;
 }
 async function fetchAnime(id) {
+    // Fetches anime info from the API and returns an anime object.
     const json = await fetchJSON(API_URL_BASE + API_URL_ANIME + id);
     const ja = json.data;
     const res = new Anime(
@@ -276,33 +286,38 @@ async function fetchAnime(id) {
         0
     );
     const savedanime = gMyAnimes.find(b => b.id === res.id);
-    if (savedanime)
+    if (savedanime) // return the saved version if possible
         res = savedanime;
     return res;
 }
 async function showSearchResults(animes) {
-    hcMain.innerHTML = ""; // clear the container
-    const hcCards = document.createElement("div");
-    hcCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
+    // Renders the animes in the search tab
+    hMain.innerHTML = ""; // clear the container
+    const hCards = document.createElement("div");
+    hCards.id = hChkShowList.checked ? "cListSearch" : "cCards";
+    // Add title row
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
         hTitleRow.innerHTML = ["", "Poäng", "Titel"]
             .reduce((a, s) => a + `<span>${s}</span>`, "");
         hTitleRow.classList.add("title-row");
-        hcCards.appendChild(hTitleRow);
+        hCards.appendChild(hTitleRow);
     }
+    // Add animes
     for (const a of animes) {
         if (hChkShowList.checked)
-            hcCards.appendChild(createRow(a, 0));
+            hCards.appendChild(createRow(a, 0));
         else
-            hcCards.appendChild(createCard(a, 0));
+            hCards.appendChild(createCard(a, 0));
     }
-    hcMain.appendChild(hcCards); // Add cards to html page
+    hMain.appendChild(hCards); // Add cards to html page
 }
 function showSaved(animes) {
-    hcMain.innerHTML = "";
+    // Renders the animes in the saved tab
+    hMain.innerHTML = "";
     const hContainer = document.createElement("div");
     hContainer.id = hChkShowList.checked ? "cListSaved" : "cCards";
+    // Add title row
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
         hTitleRow.innerHTML =
@@ -311,6 +326,7 @@ function showSaved(animes) {
         hTitleRow.classList.add("title-row");
         hContainer.appendChild(hTitleRow);
     }
+    // Add animes
     for (const a of animes) {
         if (!gFilterWatched || !a.watched) {
             if (hChkShowList.checked)
@@ -319,10 +335,11 @@ function showSaved(animes) {
                 hContainer.appendChild(createCard(a, 1));
         };
     };
-    hcMain.appendChild(hContainer);
+    hMain.appendChild(hContainer);
 }
 function showSingle(anime) {
-    hcMain.innerHTML = ""; // clear the area
+    // Renders the anime in the single tab
+    hMain.innerHTML = ""; // clear the area
 
     // #region The card container
     const hCard = document.createElement("article");
@@ -414,11 +431,10 @@ function showSingle(anime) {
     hCard.appendChild(hRight);
     // #endregion
 
-    hcMain.appendChild(hCard);
+    hMain.appendChild(hCard);
 }
 function createCard(anime, tab) {
-    // Returns a small card article element for the supplied anime object
-
+    // Returns a small card element for the anime
     const hCard = document.createElement("article");
     hCard.classList.add("anime-card");
 
@@ -485,6 +501,7 @@ function createCard(anime, tab) {
     return hCard;
 }
 function createRow(anime, tab) {
+    // Returns a row element for the anime
     const hRow = document.createElement("div");
     hRow.classList.add("anime-row");
     hRow.anime = anime; // Store anime object for use in event handlers
@@ -535,9 +552,10 @@ function createRow(anime, tab) {
     return hRow;
 }
 function createRatingSelect(anime) {
+    // Returns a SELECT element for rating
     const hRating = document.createElement("select");
     hRating.addEventListener("change", onRatingChange);
-    hRating.anime = anime; // Store anime object for use in event handler
+    hRating.anime = anime; // Store anime object for later use in event handlers
     for (let i = 0; i < 11; i++) {
         const hOption = document.createElement("option");
         if (i === 0) {
@@ -553,6 +571,7 @@ function createRatingSelect(anime) {
     return hRating;
 }
 function createGenreDivs(anime) {
+    // Returns a div element with all genres
     const hGenres = document.createElement("div");
     hGenres.classList.add("card-genres");
     for (const genre of anime.genres) {
@@ -609,24 +628,24 @@ function pushStateSearch(query, page) {
         query: query,
         page: page
     };
-    pushState(`search?q=${query}&page=${page}`, state, "Sök");
+    pushState(`search?q=${query}&page=${page}`, state, " - Sök");
 }
 function pushStateSaved() {
     const state = {
         tab: 1
     };
-    pushState("", state, "Sparade");
+    pushState("", state, "");
 }
 function pushStateSingle(id) {
     const state = {
         tab: 2,
         id: id
     };
-    pushState("details/" + id, state, "Detaljer");
+    pushState("details/" + id, state, " - Detaljer");
 }
 function pushState(urlend, state, titleEnd) {
     const nextURL = URL_BASE + urlend;
-    let title = "Mina Anime - " + titleEnd;
+    let title = "Mina Anime" + titleEnd;
     state.title = title;
     document.title = title;
     window.history.pushState(state, title, nextURL);
