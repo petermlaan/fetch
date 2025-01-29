@@ -576,9 +576,9 @@ function showHideElements(tab) {
     hChkShowList.hidden = tab === 2;
     hTest.hidden = tab === 2;
 }
-function disableNextPrev(pagination) {
+function disableNextPrev({has_next_page, current_page}) {
     // Next page button
-    if (pagination.has_next_page) {
+    if (has_next_page) {
         hBtnNext.disabled = false;
         hBtnNext.classList.remove("disabled");
     } else {
@@ -586,7 +586,7 @@ function disableNextPrev(pagination) {
         hBtnNext.classList.add("disabled");
     }
     // Prev page button
-    if (pagination.current_page > 1) {
+    if (current_page > 1) {
         hBtnPrev.disabled = false;
         hBtnPrev.classList.remove("disabled");
     } else {
