@@ -226,7 +226,7 @@ header {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem 0.4rem;
-    
+
     .card-genre {
         background-color: var(--clr-main3);
         color: var(--clr-main0);
@@ -234,5 +234,5 @@ header {
         font-size: 0.9rem;
         font-weight: bold;
         border-radius: 1rem / 1rem;
-  }
+    }
 }
