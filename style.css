@@ -3,6 +3,7 @@
     --clr-main1: #035;
     --clr-main2: #057;
     --clr-main3: #9ef;
+    --clr-main4: #fff;
 }
 
 html {
@@ -11,7 +12,7 @@ html {
 }
 
 a {
-    color: var(--clr-main3);
+    color: var(--clr-main4);
     text-decoration: none;
 
     &:hover {
@@ -55,6 +56,7 @@ button.disabled:hover {
 }
 
 h1 {
+    color: var(--clr-main4);
     font-family: "Style Script", serif;
     font-style: normal;
     position: absolute;
@@ -64,7 +66,8 @@ h1 {
 }
 
 h2 {
-    margin: 0.5rem 0;
+    color: var(--clr-main4);
+    margin: 0.4rem 0;
 }
 
 body {
@@ -94,6 +97,7 @@ header {
             display: flex;
 
             a {
+                color: var(--clr-main3);
                 font-size: large;
                 font-weight: bold;
                 height: 100%;
@@ -151,7 +155,6 @@ header {
         width: 300px;
         height: 450px;
         object-fit: cover;
-        margin-top: 10px;
 
         &:hover {
             outline: 3px solid var(--clr-main3);
@@ -169,10 +172,15 @@ header {
     padding: 9px;
     margin: 0 auto;
 
+    @media (width < 800px) {
+        flex-flow: column;
+    }
+
     .single-left {
         display: flex;
         gap: 0.5rem;
         flex-direction: column;
+        width: min-content;
 
         .single-left-toprow {
             display: grid;
@@ -201,6 +209,14 @@ header {
     display: grid;
     grid-template-columns: 4rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
+    justify-content: start;
+    justify-items: start;
+    align-content: start;
+    align-items: start;
+
+    button, select, input {
+        align-self: start;
+    }
 
     &>div:nth-child(even) {
         background-color: var(--clr-main1);
@@ -209,8 +225,12 @@ header {
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4rem 5rem 3rem 3rem 1fr;
+    grid-template-columns: 4rem 3rem 3rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
+
+    button, select, input {
+        align-self: start;
+    }
 
     &>div:nth-child(even) {
         background-color: var(--clr-main1);

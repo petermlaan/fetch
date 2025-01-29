@@ -474,6 +474,12 @@ function createCard(anime, tab) {
     hCard.appendChild(hTopRow);
     // #endregion
 
+    // #region Title
+    const hTitleEn = document.createElement("h2");
+    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
+    hCard.appendChild(hTitleEn);
+    // #endregion
+
     // #region Poster image
     const hPosterLink = document.createElement("a");
     hPosterLink.href = "#";
@@ -484,12 +490,6 @@ function createCard(anime, tab) {
     hPoster.classList.add("poster");
     hPosterLink.appendChild(hPoster);
     hCard.appendChild(hPosterLink);
-    // #endregion
-
-    // #region Title
-    const hTitleEn = document.createElement("h2");
-    hTitleEn.innerText = anime.title_en ? anime.title_en : anime.title;
-    hCard.appendChild(hTitleEn);
     // #endregion
 
     // #region Genres
