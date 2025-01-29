@@ -149,6 +149,9 @@ function onSavedRemove(e) {
     storeMyAnimes(gMyAnimes);
     showSaved(gMyAnimes);
 }
+function onClose(e) {
+    history.back();
+}
 function onSavedWatched(e) {
     e.target.anime.watched = !e.target.anime.watched;
     storeMyAnimes(gMyAnimes);
@@ -394,7 +397,7 @@ function showSingle(anime) {
     // #region Close button
     const hClose = document.createElement("button");
     hClose.innerText = "Stäng";
-    hClose.addEventListener("click", e => history.back());
+    hClose.addEventListener("click", onClose);
     hLeftTopRow.appendChild(hClose);
     // #endregion
     // #region Save button
