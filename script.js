@@ -3,6 +3,7 @@ import { fetchJSON, formatDecimalPlaces } from "./util.js";
 // #region Gobal constants
 const API_URL_BASE = "https://api.jikan.moe/v4/";
 const API_URL_SEARCH = "anime?sfw&q=";
+const API_URL_ANIME = "anime/";
 const URL_BASE = "/myanime/";
 const LS_MODEL = "model";
 // #endregion
@@ -52,7 +53,7 @@ function onSearchTab(e) {
     e.preventDefault();
     if (gTab !== 0) {
         gTab = 0;
-        pushStateSearch(gQuery);
+        pushStateSearch(gQuery, gPage);
     }
     showHideElements(gTab);
     showSearchResults(gSearchResults);
@@ -88,7 +89,7 @@ async function onSearch(e) {
         gPage = 1;
         const newQuery = document.querySelector("#txtQuery").value;
         if (newQuery !== gQuery) {
-            pushStateSearch(newQuery);
+            pushStateSearch(newQuery, gPage);
         }
         const hForm = document.querySelector("#frmSearch");
         if (!hForm.reportValidity())
@@ -107,6 +108,7 @@ async function onNextPage(e) {
         gPage++;
         gSearchResults = await search(gQuery, gPage);
         showSearchResults(gSearchResults);
+        pushStateSearch(gQuery, gPage);
     }
 }
 async function onPrevPage(e) {
@@ -115,6 +117,7 @@ async function onPrevPage(e) {
         gPage--;
         gSearchResults = await search(gQuery, gPage);
         showSearchResults(gSearchResults);
+        pushStateSearch(gQuery, gPage);
     }
 }
 function onFilterWatched(e) {
@@ -162,8 +165,8 @@ async function onHistoryChanged(e) {
     showHideElements(gTab);
     switch (gTab) {
         case 0: // Search tab
-            const useOldSearchResults = gQuery === e.state.query;
-            gQuery = e.state.query;
+            const useOldSearchResults = gQuery === e.state.query && gPage === e.state.page;
+            ({ query: gQuery, page: gPage } = e.state);
             if (useOldSearchResults)
                 showSearchResults(gSearchResults);
             else {
@@ -178,9 +181,12 @@ async function onHistoryChanged(e) {
             showSaved(gMyAnimes);
             break;
         case 2: // Single tab
-            const anime = gMyAnimes.find(a => a.id === e.state.id);
-            if (anime)
-                showSingle(anime);
+            let anime = gMyAnimes.find(a => a.id === e.state.id);
+            if (!anime && gSearchResults)
+                anime = gSearchResults.find(a => a.id === e.state.id);
+            if (!anime)
+                anime = await fetchAnime(e.state.id);
+            showSingle(anime);
             break;
     }
 }
@@ -229,6 +235,7 @@ async function onTest(e) {
 // #region Other functions
 async function search(query, page) {
     const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
+    console.log(json);
     const res = [];
     for (const ja of json.data) {
         let a = new Anime(
@@ -250,6 +257,29 @@ async function search(query, page) {
             a = savedanime;
         res.push(a);
     }
+    disableNextPrev(json.pagination);
+    return res;
+}
+async function fetchAnime(id) {
+    const json = await fetchJSON(API_URL_BASE + API_URL_ANIME + id);
+    const ja = json.data;
+    const res = new Anime(
+        ja.mal_id,
+        ja.title,
+        ja.title_english,
+        ja.images.jpg.thumbnail_image_url,
+        ja.images.jpg.small_image_url,
+        ja.images.jpg.large_image_url,
+        ja.synopsis,
+        ja.genres,
+        ja.score,
+        false,
+        false,
+        0
+    );
+    const savedanime = gMyAnimes.find(b => b.id === res.id);
+    if (savedanime)
+        res = savedanime;
     return res;
 }
 async function showSearchResults(animes) {
@@ -535,16 +565,6 @@ function createGenreDivs(anime) {
     }
     return hGenres;
 }
-function storage2model() {
-    const m = localStorage.getItem(LS_MODEL);
-    if (m !== null)
-        gMyAnimes = JSON.parse(m);
-    if (!gMyAnimes)
-        gMyAnimes = [];
-}
-function model2storage() {
-    localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
-}
 function showHideElements(tab) {
     hTxtQuery.hidden = tab !== 0;
     hBtnSearch.hidden = tab !== 0;
@@ -556,12 +576,41 @@ function showHideElements(tab) {
     hChkShowList.hidden = tab === 2;
     hTest.hidden = tab === 2;
 }
-function pushStateSearch(query) {
+function disableNextPrev(pagination) {
+    // Next page button
+    if (pagination.has_next_page) {
+        hBtnNext.disabled = false;
+        hBtnNext.classList.remove("disabled");
+    } else {
+        hBtnNext.disabled = true;
+        hBtnNext.classList.add("disabled");
+    }
+    // Prev page button
+    if (pagination.current_page > 1) {
+        hBtnPrev.disabled = false;
+        hBtnPrev.classList.remove("disabled");
+    } else {
+        hBtnPrev.disabled = true;
+        hBtnPrev.classList.add("disabled");
+    }
+}
+function storage2model() {
+    const m = localStorage.getItem(LS_MODEL);
+    if (m !== null)
+        gMyAnimes = JSON.parse(m);
+    if (!gMyAnimes)
+        gMyAnimes = [];
+}
+function model2storage() {
+    localStorage.setItem(LS_MODEL, JSON.stringify(gMyAnimes));
+}
+function pushStateSearch(query, page) {
     const state = {
         tab: 0,
-        query: query
+        query: query,
+        page: page
     };
-    pushState("search?q=" + query, state, "Sök");
+    pushState(`search?q=${query}&page=${page}`, state, "Sök");
 }
 function pushStateSaved() {
     const state = {
