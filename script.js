@@ -160,31 +160,51 @@ function onRatingChange(e) {
 }
 function onTitle(e) {
     e.preventDefault();
-    const col = e.target.attributes["col"];
-    switch (col.value) {
-        case "4": // Title column
-            if (gTitleSort) // sort a->z or z->a?
-                gMyAnimes.sort((a, b) => b.title_en.localeCompare(a.title_en));
-            else
-                gMyAnimes.sort((a, b) => a.title_en.localeCompare(b.title_en));
-            gTitleSort = !gTitleSort; // switch sort order for next time
-            break;
-        case "3": // Rating column
-            if (gRatingSort) // sort a->z or z->a?
-                gMyAnimes.sort((a, b) => b.myRating - a.myRating);
-            else
-                gMyAnimes.sort((a, b) => a.myRating - b.myRating);
-            gRatingSort = !gRatingSort; // switch sort order for next time
-            break;
-        case "2": // Score column
-            if (gScoreSort) // sort a->z or z->a?
-                gMyAnimes.sort((a, b) => b.score - a.score);
-            else
-                gMyAnimes.sort((a, b) => a.score - b.score);
-            gScoreSort = !gScoreSort; // switch sort order for next time
-            break;
+    const col = e.target.attributes["col"].value;
+    if (gTab === 0) {
+        switch (col) {
+            case "1": // Score column
+                if (gScoreSort) // sort a->z or z->a?
+                    gSearchResults.sort((a, b) => b.score - a.score);
+                else
+                    gSearchResults.sort((a, b) => a.score - b.score);
+                gScoreSort = !gScoreSort; // switch sort order for next time
+                break;
+            case "2": // Title column
+                if (gTitleSort) // sort a->z or z->a?
+                    gSearchResults.sort((a, b) => b.title_en.localeCompare(a.title_en));
+                else
+                    gSearchResults.sort((a, b) => a.title_en.localeCompare(b.title_en));
+                gTitleSort = !gTitleSort; // switch sort order for next time
+                break;
+        }
+        showSearchResults(gSearchResults);
+    } else {
+        switch (col) {
+            case "2": // Score column
+                if (gScoreSort) // sort a->z or z->a?
+                    gMyAnimes.sort((a, b) => b.score - a.score);
+                else
+                    gMyAnimes.sort((a, b) => a.score - b.score);
+                gScoreSort = !gScoreSort; // switch sort order for next time
+                break;
+            case "3": // Rating column
+                if (gRatingSort) // sort a->z or z->a?
+                    gMyAnimes.sort((a, b) => b.myRating - a.myRating);
+                else
+                    gMyAnimes.sort((a, b) => a.myRating - b.myRating);
+                gRatingSort = !gRatingSort; // switch sort order for next time
+                break;
+            case "4": // Title column
+                if (gTitleSort) // sort a->z or z->a?
+                    gMyAnimes.sort((a, b) => b.title_en.localeCompare(a.title_en));
+                else
+                    gMyAnimes.sort((a, b) => a.title_en.localeCompare(b.title_en));
+                gTitleSort = !gTitleSort; // switch sort order for next time
+                break;
+        }
+        showSaved(gMyAnimes);
     }
-    showSaved(gMyAnimes);
 }
 async function onHistoryChanged(e) {
     if (!e.state) {
@@ -313,8 +333,9 @@ async function showSearchResults(animes) {
     // Add title row
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
-        hTitleRow.innerHTML = ["", "Poäng", "Titel"]
-            .reduce((a, s) => a + `<span>${s}</span>`, "");
+        hTitleRow.innerHTML = [["", 0], ["Poäng", 1], ["Titel", 2]]
+            .reduce((a, [s, c]) => a + `<a href="#" col="${c}">${s}</a>`, "");
+        hTitleRow.childNodes.forEach(n => n.addEventListener("click", onTitle));
         hTitleRow.classList.add("title-row");
         hCards.appendChild(hTitleRow);
     }
