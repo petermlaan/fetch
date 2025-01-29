@@ -2,16 +2,15 @@ import { fetchJSON, formatDecimalPlaces } from "./util.js";
 
 // #region Gobal constants
 const API_URL_BASE = "https://api.jikan.moe/v4/";
-const API_URL_SEARCH = "anime?sfw&q=";
-const API_URL_ANIME = "anime/";
-const URL_BASE = "/myanime/";
+const API_URL_SEARCH = "anime?sfw&q="; // add query and optionally page=x
+const API_URL_ANIME = "anime/"; // fetch a single anime by id
+const URL_BASE = "/myanime/"; // Our url when state pushing
 const LS_MODEL = "model"; // local storage key
 // #endregion
 
 // #region Global variables
 let gSearchResults = []; // Last search result
 let gMyAnimes = []; // Saved animes
-let gFilterWatched = false;
 let gQuery = ""; // The latest search query
 let gPage = 1; // search pagination
 let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
@@ -119,7 +118,6 @@ async function onPrevPage(e) {
     }
 }
 function onFilterWatched(e) {
-    gFilterWatched = !gFilterWatched;
     showSaved(gMyAnimes);
 }
 function onSavedAdd(e) {
@@ -328,7 +326,7 @@ function showSaved(animes) {
     }
     // Add animes
     for (const a of animes) {
-        if (!gFilterWatched || !a.watched) {
+        if (!hChkFilterWatched.checked || !a.watched) {
             if (hChkShowList.checked)
                 hContainer.appendChild(createRow(a, 1));
             else
@@ -612,6 +610,7 @@ function disableNextPrev({ has_next_page, current_page }) {
     }
 }
 function loadMyAnimes() {
+    // Loads saved animes from local storage and returns them.
     let res = [];
     const m = localStorage.getItem(LS_MODEL);
     res = m ? JSON.parse(m) : [];
@@ -620,9 +619,11 @@ function loadMyAnimes() {
     return res;
 }
 function storeMyAnimes(animes) {
+    // Stores the animes in local storage
     localStorage.setItem(LS_MODEL, JSON.stringify(animes));
 }
 function pushStateSearch(query, page) {
+    // Adds a history state for the search tab
     const state = {
         tab: 0,
         query: query,
@@ -631,12 +632,14 @@ function pushStateSearch(query, page) {
     pushState(`search?q=${query}&page=${page}`, state, " - Sök");
 }
 function pushStateSaved() {
+    // Adds a history state for the saved tab
     const state = {
         tab: 1
     };
     pushState("", state, "");
 }
 function pushStateSingle(id) {
+    // Adds a history state for the details tab
     const state = {
         tab: 2,
         id: id
@@ -644,6 +647,7 @@ function pushStateSingle(id) {
     pushState("details/" + id, state, " - Detaljer");
 }
 function pushState(urlend, state, titleEnd) {
+    // Adds a history state to enable back and forth browser navigation
     const nextURL = URL_BASE + urlend;
     let title = "Mina Anime" + titleEnd;
     state.title = title;
