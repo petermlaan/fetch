@@ -334,6 +334,7 @@ function showSingle(anime) {
     // #region Left part
     const hLeft = document.createElement("div");
     hLeft.classList.add("single-left");
+
     // #region Left top row
     const hLeftTopRow = document.createElement("div");
     hLeftTopRow.classList.add("single-left-toprow");
@@ -367,21 +368,25 @@ function showSingle(anime) {
     // #endregion
     hLeft.appendChild(hLeftTopRow);
     // #endregion
-    // #region Poster
+
+    // #region Poster image
     const hPoster = document.createElement("img");
     hPoster.src = anime.poster_s3;
     hPoster.classList.add("poster");
     hLeft.appendChild(hPoster);
     // #endregion
+
     // #region Genres
     const hGenres = createGenreDivs(anime);
     hLeft.appendChild(hGenres);
     // #endregion
+
     hCard.appendChild(hLeft);
     // #endregion
 
     // #region Right part
     const hRight = document.createElement("div");
+
     // #region Top row
     const hRightTopRow = document.createElement("div");
     hRightTopRow.classList.add("single-right-toprow");
@@ -391,27 +396,31 @@ function showSingle(anime) {
     if (anime.saved) {
         const hRatingLbl = document.createElement("label");
         hRatingLbl.htmlFor = "rating";
-        hRatingLbl.innerText = "Betyg:";
+        hRatingLbl.innerText = "Betyg: ";
         hRatingLbl.appendChild(createRatingSelect(anime));
         hRightTopRow.appendChild(hRatingLbl);
     }
     hRight.appendChild(hRightTopRow);
     // #endregion
+
     // #region Title english
     const hTitleEn = document.createElement("h2");
     hTitleEn.innerText = anime.title_en;
     hRight.appendChild(hTitleEn);
     // #endregion
+
     // #region Title
     const hTitle = document.createElement("h3");
     hTitle.innerText = anime.title;
     hRight.appendChild(hTitle);
     // #endregion
+
     // #region Synopsis
     const hSynopsis = document.createElement("p");
     hSynopsis.innerText = anime.synopsis;
     hRight.appendChild(hSynopsis);
     // #endregion
+
     hCard.appendChild(hRight);
     // #endregion
 
@@ -425,6 +434,7 @@ function createCard(anime, tab) {
     // #region Top row
     const hTopRow = document.createElement("div");
     hTopRow.classList.add("card-toprow");
+
     // #region Save button
     const hSave = document.createElement("button");
     hSave.innerText = tab === 1 ? "Ta bort" : "Spara";
@@ -436,15 +446,19 @@ function createCard(anime, tab) {
     hSave.anime = anime; // Store anime object for use in event handler
     hTopRow.appendChild(hSave);
     // #endregion
+
     // #region Score
     const hScore = document.createElement("span");
     hScore.innerText = "Poäng: " + formatDecimalPlaces(anime.score, 1);
     hTopRow.appendChild(hScore);
     // #endregion
+
     // #region Watched
     const hWatchedLabel = document.createElement("label");
-    hWatchedLabel.innerText = tab === 1 ? "Sedd" : "";
+    hWatchedLabel.innerText = "Sedd";
     hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+    if (tab === 0)
+        hWatchedLabel.style.visibility = "hidden";
     hTopRow.appendChild(hWatchedLabel);
     const hWatched = document.createElement("input");
     hWatched.type = "checkbox";
@@ -452,13 +466,15 @@ function createCard(anime, tab) {
     hWatched.checked = anime.watched;
     hWatched.addEventListener("click", onSavedWatched);
     hWatched.anime = anime; // Store anime object for use in event handler
-    hWatched.hidden = tab === 0;
+    if (tab === 0)
+        hWatched.style.visibility = "hidden";
     hWatchedLabel.appendChild(hWatched);
     // #endregion
+
     hCard.appendChild(hTopRow);
     // #endregion
 
-    // #region Image
+    // #region Poster image
     const hPosterLink = document.createElement("a");
     hPosterLink.href = "#";
     hPosterLink.addEventListener("click", onSingleTab);
