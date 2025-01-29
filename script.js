@@ -196,22 +196,8 @@ async function onHistoryChanged(e) {
 async function onTest(e) {
     // Add some test data
     async function addAnime(id) {
-        console.log(id);
-        const json = await fetchJSON(API_URL_BASE + "anime/" + id);
-        const jsondata = json.data;
-        const a = new Anime(
-            jsondata.mal_id,
-            jsondata.title,
-            jsondata.title_english,
-            jsondata.images.jpg.thumbnail_image_url,
-            jsondata.images.jpg.small_image_url,
-            jsondata.images.jpg.large_image_url,
-            jsondata.synopsis,
-            jsondata.genres,
-            jsondata.score,
-            true,
-            false,
-            0);
+        const a = await fetchAnime(id);
+        a.saved = true;
         gMyAnimes.push(a);
     }
     try {
@@ -222,9 +208,9 @@ async function onTest(e) {
             if (!gMyAnimes.some(a => a.id === id)) {
                 await addAnime(id)
                 added++;
+                if (added > 1)
+                    break;
             };
-            if (added > 1)
-                break;
         }
         storeMyAnimes(gMyAnimes);
         gTab = 1;
@@ -262,7 +248,7 @@ async function search(query, page) {
             a = savedanime;
         res.push(a);
     }
-    disableNextPrev(json.pagination);
+    checkNextPrev(json.pagination);
     return res;
 }
 async function fetchAnime(id) {
@@ -456,19 +442,18 @@ function createCard(anime, tab) {
     hTopRow.appendChild(hScore);
     // #endregion
     // #region Watched
-    if (anime.saved) {
-        const hWatchedLabel = document.createElement("label");
-        hWatchedLabel.innerText = "Sedd";
-        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-        hTopRow.appendChild(hWatchedLabel);
-        const hWatched = document.createElement("input");
-        hWatched.type = "checkbox";
-        hWatched.id = `chkWatched${anime.id}`;
-        hWatched.checked = anime.watched;
-        hWatched.addEventListener("click", onSavedWatched);
-        hWatched.anime = anime; // Store anime object for use in event handler
-        hWatchedLabel.appendChild(hWatched);
-    }
+    const hWatchedLabel = document.createElement("label");
+    hWatchedLabel.innerText = tab === 1 ? "Sedd" : "";
+    hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
+    hTopRow.appendChild(hWatchedLabel);
+    const hWatched = document.createElement("input");
+    hWatched.type = "checkbox";
+    hWatched.id = `chkWatched${anime.id}`;
+    hWatched.checked = anime.watched;
+    hWatched.addEventListener("click", onSavedWatched);
+    hWatched.anime = anime; // Store anime object for use in event handler
+    hWatched.hidden = tab === 0;
+    hWatchedLabel.appendChild(hWatched);
     // #endregion
     hCard.appendChild(hTopRow);
     // #endregion
@@ -591,7 +576,7 @@ function showHideElements(tab) {
     hChkShowList.hidden = tab === 2;
     hTest.hidden = tab === 2;
 }
-function disableNextPrev({ has_next_page, current_page }) {
+function checkNextPrev({ has_next_page, current_page }) {
     // Next page button
     if (has_next_page) {
         hBtnNext.disabled = false;
