@@ -14,6 +14,9 @@ let gMyAnimes = []; // Saved animes
 let gQuery = ""; // The latest search query
 let gPage = 1; // search pagination
 let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
+let gTitleSort = false;
+let gRatingSort = true;
+let gScoreSort = true;
 // #endregion
 
 // #region Global html elements
@@ -152,8 +155,36 @@ function onSavedWatched(e) {
 }
 function onRatingChange(e) {
     const anime = e.target.anime;
-    anime.myRating = e.target.value;
+    anime.myRating = +e.target.value;
     storeMyAnimes(gMyAnimes);
+}
+function onTitle(e) {
+    e.preventDefault();
+    const col = e.target.attributes["col"];
+    switch (col.value) {
+        case "4": // Title column
+            if (gTitleSort) // sort a->z or z->a?
+                gMyAnimes.sort((a, b) => b.title_en.localeCompare(a.title_en));
+            else
+                gMyAnimes.sort((a, b) => a.title_en.localeCompare(b.title_en));
+            gTitleSort = !gTitleSort; // switch sort order for next time
+            break;
+        case "3": // Rating column
+            if (gRatingSort) // sort a->z or z->a?
+                gMyAnimes.sort((a, b) => b.myRating - a.myRating);
+            else
+                gMyAnimes.sort((a, b) => a.myRating - b.myRating);
+            gRatingSort = !gRatingSort; // switch sort order for next time
+            break;
+        case "2": // Score column
+            if (gScoreSort) // sort a->z or z->a?
+                gMyAnimes.sort((a, b) => b.score - a.score);
+            else
+                gMyAnimes.sort((a, b) => a.score - b.score);
+            gScoreSort = !gScoreSort; // switch sort order for next time
+            break;
+    }
+    showSaved(gMyAnimes);
 }
 async function onHistoryChanged(e) {
     if (!e.state) {
@@ -304,9 +335,10 @@ function showSaved(animes) {
     // Add title row
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
-        hTitleRow.innerHTML =
-            ["", "Sedd", "Poäng", "Betyg", "Titel"]
-                .reduce((a, s) => a + `<span>${s}</span>`, "");
+        hTitleRow.innerHTML = // col us used in onTitle for sorting
+            [["", 0], ["Sedd", 1], ["Poäng", 2], ["Betyg", 3], ["Titel", 4]]
+                .reduce((a, [s, c]) => a + `<a href="#" col="${c}">${s}</a>`, "");
+        hTitleRow.childNodes.forEach(n => n.addEventListener("click", onTitle));
         hTitleRow.classList.add("title-row");
         hContainer.appendChild(hTitleRow);
     }
@@ -664,8 +696,8 @@ class Anime {
         synopsis, genres, score, saved, watched, myRating) {
 
         this.id = id;
-        this.title = title;
-        this.title_en = title_en;
+        this.title = title ? title : title_en;
+        this.title_en = title_en ? title_en : title;
         this.poster_s1 = poster_s1;
         this.poster_s2 = poster_s2;
         this.poster_s3 = poster_s3;
