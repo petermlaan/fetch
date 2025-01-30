@@ -1,4 +1,3 @@
-
 :root {
     --clr-main0: #024;
     --clr-main1: #035;
@@ -36,7 +35,9 @@ a {
     }
 }
 
-input, select, button {
+input,
+select,
+button {
     background-color: var(--clr-main1);
     color: var(--clr-main3);
     border-radius: 1rem / 1rem;
@@ -224,7 +225,6 @@ header {
     gap: 1rem;
     background-color: var(--clr-main1);
     border: 1px solid var(--clr-main3);
-    width: auto;
     padding: 9px;
     margin: 0 auto;
 
@@ -247,17 +247,18 @@ header {
                 text-align: end;
             }
         }
+
+        .poster {
+            width: 300px;
+            height: 450px;
+            object-fit: cover;
+        }
     }
 
     .single-right-toprow {
         display: flex;
+        align-items: center;
         gap: 0.5rem;
-    }
-
-    .poster {
-        width: 300px;
-        height: 450px;
-        object-fit: cover;
     }
 }
 
@@ -272,19 +273,19 @@ header {
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
     font-weight: bold;
-    border-bottom: 1px solid;
+    border-bottom: 1px solid var(--clr-main3);
 }
 
 .card-genres {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem 0.4rem;
+    gap: 0.4rem;
 
     .card-genre {
         background-color: var(--clr-main3);
         color: var(--clr-main0);
         height: min-content;
-        padding: 0 10px;
+        padding: 0 0.6rem;
         font-size: 0.9rem;
         font-weight: bold;
         border-radius: 1rem / 1rem;
