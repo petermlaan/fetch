@@ -18,6 +18,7 @@ let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
 let gTitleSort = false;
 let gRatingSort = true;
 let gScoreSort = true;
+let gWatchedSort = true;
 // #endregion
 
 // #region ----- Global html elements   ----- 
@@ -211,6 +212,13 @@ function onTitle(e) {
         showSearchResults(gSearchResults);
     } else {
         switch (col) {
+            case "1": // Score column
+                if (gWatchedSort) // sort a->z or z->a?
+                    gMyAnimes.sort((a, b) => b.watched - a.watched);
+                else
+                    gMyAnimes.sort((a, b) => a.watched - b.watched);
+                gWatchedSort = !gWatchedSort; // switch sort order for next time
+                break;
             case "2": // Score column
                 if (gScoreSort) // sort a->z or z->a?
                     gMyAnimes.sort((a, b) => b.score - a.score);
@@ -397,7 +405,7 @@ function showSaved(animes) {
     // Add title row
     if (hChkShowList.checked) {
         const hTitleRow = document.createElement("div");
-        hTitleRow.innerHTML = // col us used in onTitle for sorting
+        hTitleRow.innerHTML = // col is used in onTitle for sorting
             [["", 0], ["Sedd", 1], ["Poäng", 2], ["Betyg", 3], ["Titel", 4]]
                 .reduce((a, [s, c]) => a + `<div><a href="#" col="${c}">${s}</a></div>`, "");
         hTitleRow.childNodes.forEach(n => n.firstChild.addEventListener("click", onTitle));
