@@ -3,6 +3,7 @@ import { fetchJSON, formatDecimalPlaces } from "./util.js";
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
 const API_URL_SEARCH = "anime?sfw&q="; // add query and optionally page=x
+const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add query, page=x, cat=y
 const API_URL_ANIME = "anime/"; // fetch a single anime by id
 const URL_BASE = "/myanime/"; // Our url when state pushing
 const LS_MODEL = "model"; // local storage key
@@ -24,6 +25,10 @@ const hTxtQuery = document.querySelector("#txtQuery");
 const hBtnSearch = document.querySelector("#btnSearch");
 const hBtnNext = document.querySelector("#btnNextPage");
 const hBtnPrev = document.querySelector("#btnPrevPage");
+const hChkTopSearch = document.querySelector("#chkTopSearch");
+const hLblTopSearch = document.querySelector("#lblTopSearch");
+const hSelType = document.querySelector("#selType");
+const hLblType = document.querySelector("#lblType");
 const hChkFilterWatched = document.querySelector("#chkFilterWatched");
 const hLblFilterWatched = document.querySelector("#lblFilterWatched");
 const hLblShowList = document.querySelector("#lblShowList");
@@ -86,16 +91,21 @@ function onShowList(e) {
 async function onSearch(e) {
     try {
         e.preventDefault();
-        gPage = 1;
-        const newQuery = document.querySelector("#txtQuery").value;
-        if (newQuery !== gQuery) {
-            pushStateSearch(newQuery, gPage);
-        }
         const hForm = document.querySelector("#frmSearch");
         if (!hForm.reportValidity())
             return;
+        gPage = 1;
+        const newQuery = hTxtQuery.value;
+        const topSearch = hChkTopSearch.checked;
+        const type = hSelType.value;
+        if (topSearch) {
+            pushStateSearchTop(type, gPage);
+        } else {
+            if (newQuery !== gQuery)
+                pushStateSearch(newQuery, gPage);
+        }
         gQuery = newQuery;
-        gSearchResults = await search(gQuery, gPage);
+        gSearchResults = await search(gQuery, gPage, topSearch, type);
         showSearchResults(gSearchResults);
     }
     catch (err) {
@@ -104,20 +114,26 @@ async function onSearch(e) {
 }
 async function onNextPage(e) {
     e.preventDefault();
-    if (gQuery) {
+    if (gQuery || hChkTopSearch.checked) {
         gPage++;
-        gSearchResults = await search(gQuery, gPage);
+        gSearchResults = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value);
         showSearchResults(gSearchResults);
-        pushStateSearch(gQuery, gPage);
+        if (hChkTopSearch.checked)
+            pushStateSearchTop(hSelType.value, gPage);
+        else
+            pushStateSearch(gQuery, gPage);
     }
 }
 async function onPrevPage(e) {
     e.preventDefault();
-    if (gPage > 1 && gQuery) {
+    if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
         gPage--;
-        gSearchResults = await search(gQuery, gPage);
+        gSearchResults = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value);
         showSearchResults(gSearchResults);
-        pushStateSearch(gQuery, gPage);
+        if (hChkTopSearch.checked)
+            pushStateSearchTop(hSelType.value, gPage);
+        else
+            pushStateSearch(gQuery, gPage);
     }
 }
 function onFilterWatched(e) {
@@ -276,10 +292,14 @@ async function onTest(e) {
 // #endregion
 
 // #region ----- Other functions        ----- 
-async function search(query, page) {
+async function search(query, page, topSearch, type) {
     // Sends a search query to the API and returns an array of anime objects.
     // Also disables or enables next and prev page buttons.
-    const json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
+    let json = null;
+    if (topSearch)
+        json = await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`);
+    else
+        json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
     console.log(json);
     const res = [];
     for (const ja of json.data) {
@@ -687,6 +707,15 @@ function pushStateSearch(query, page) {
         page: page
     };
     pushState(`search?q=${query}&page=${page}`, state, " - Sök");
+}
+function pushStateSearchTop(type, page) {
+    // Adds a history state for the search tab
+    const state = {
+        tab: 0,
+        type: type,
+        page: page
+    };
+    pushState(`search?type=${type}&page=${page}`, state, " - Sök");
 }
 function pushStateSaved() {
     // Adds a history state for the saved tab
