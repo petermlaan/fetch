@@ -187,7 +187,6 @@ header {
     gap: 1rem;
     background-color: var(--clr-main1);
     border: 1px solid var(--clr-main3);
-    padding: 10px;
     width: auto;
     padding: 9px;
     margin: 0 auto;
@@ -250,10 +249,14 @@ header {
     grid-template-columns: 4.5rem 2.5rem 3.5rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 
-    button,
-    select,
     input {
+        align-self: center;
+        height: 0.9rem;
+    }
+
+    button {
         align-self: start;
+        height: 1.7rem;
     }
 
     &>div:nth-child(even) {
