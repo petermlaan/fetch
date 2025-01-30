@@ -322,6 +322,8 @@ async function onTest(e) {
 async function search(query, page, topSearch, type) {
     // Sends a search query to the API and returns an array of anime objects.
     // Also disables or enables next and prev page buttons.
+    // topSearch = results are sorted by score.
+    // query is not used if topSearch = true.
     let json = null;
     if (topSearch)
         json = await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`);
