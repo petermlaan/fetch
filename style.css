@@ -33,18 +33,24 @@ input {
     background-color: var(--clr-main1);
     color: var(--clr-main3);
     font-size: large;
+    border-radius: 1rem / 1rem;
+    padding: 0 0.6rem;
 }
 
 select {
     background-color: var(--clr-main1);
     color: var(--clr-main3);
     font-size: large;
+    border-radius: 1rem / 1rem;
+    padding: 0 0.6rem;
 }
 
 button {
     background-color: var(--clr-main0);
     color: var(--clr-main3);
     font-weight: bold;
+    border-radius: 1rem / 1rem;
+    padding: 0 0.6rem;
 
     &:hover {
         cursor: pointer;
@@ -74,6 +80,10 @@ h1 {
 h2 {
     color: var(--clr-main4);
     margin: 0.4rem 0;
+}
+
+.center {
+    text-align: center;
 }
 
 body {
@@ -237,7 +247,7 @@ header {
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4rem 2.5rem 3.5rem 3rem 1fr;
+    grid-template-columns: 4.5rem 2.5rem 3.5rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 
     button,

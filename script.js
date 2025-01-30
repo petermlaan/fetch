@@ -632,6 +632,7 @@ function createRow(anime, tab) {
     // #region Score
     const hScore = document.createElement("span");
     hScore.innerText = anime.score ? anime.score.toFixed(1) : "";
+    hScore.classList.add("center");
     hRow.appendChild(hScore);
     // #endregion
     // #region My rating
