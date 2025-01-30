@@ -54,6 +54,7 @@ window.addEventListener("popstate", onHistoryChanged)
 
 gMyAnimes = loadMyAnimes();
 showSaved(gMyAnimes);
+window.history.scrollRestoration = "auto";
 
 // #region ----- Event listeners        ----- 
 function onSearchTab(e) {
