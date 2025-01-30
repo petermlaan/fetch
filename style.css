@@ -1,3 +1,4 @@
+
 :root {
     --clr-main0: #024;
     --clr-main1: #035;
@@ -5,68 +6,6 @@
     --clr-main3: #9ef;
     --clr-main4: #fff;
     --clr-disabled: #666;
-}
-
-html {
-    background-color: var(--clr-main0);
-    color: var(--clr-main3);
-}
-
-a {
-    color: var(--clr-main4);
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: underline;
-    }
-
-    h1:hover {
-        text-decoration: underline;
-    }
-}
-
-input {
-    background-color: var(--clr-main1);
-    color: var(--clr-main3);
-    font-size: large;
-    border-radius: 1rem / 1rem;
-    padding: 0 0.6rem;
-}
-
-select {
-    background-color: var(--clr-main1);
-    color: var(--clr-main3);
-    font-size: large;
-    border-radius: 1rem / 1rem;
-    padding: 0 0.6rem;
-}
-
-button {
-    background-color: var(--clr-main0);
-    color: var(--clr-main3);
-    font-weight: bold;
-    border-radius: 1rem / 1rem;
-    padding: 0 0.6rem;
-    height: 1.6rem;
-}
-
-button:hover {
-    cursor: pointer;
-    background-color: var(--clr-main2);
-}
-
-button.disabled:hover {
-    cursor: default;
-    background-color: var(--clr-disabled);
-}
-
-select:hover {
-    background-color: var(--clr-main2);
-}
-
-.disabled {
-    background-color: var(--clr-disabled);
-    border: none;
 }
 
 h1 {
@@ -84,8 +23,66 @@ h2 {
     margin: 0.4rem 0;
 }
 
+a {
+    color: var(--clr-main4);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    h1:hover {
+        text-decoration: underline;
+    }
+}
+
+input, select, button {
+    background-color: var(--clr-main1);
+    color: var(--clr-main3);
+    border-radius: 1rem / 1rem;
+    padding: 0 0.6rem;
+}
+
+input {
+    font-size: large;
+}
+
+select {
+    font-size: large;
+
+    &:hover {
+        background-color: var(--clr-main2);
+    }
+}
+
+button {
+    font-weight: bold;
+    border-radius: 1rem / 1rem;
+    height: 1.6rem;
+
+    &:hover {
+        cursor: pointer;
+        background-color: var(--clr-main2);
+    }
+
+    &.disabled:hover {
+        cursor: default;
+        background-color: var(--clr-disabled);
+    }
+}
+
+.disabled {
+    background-color: var(--clr-disabled);
+    border: none;
+}
+
 .center {
     text-align: center;
+}
+
+html {
+    background-color: var(--clr-main0);
+    color: var(--clr-main3);
 }
 
 body {
@@ -159,6 +156,44 @@ header {
     margin-top: 1rem;
 }
 
+#cListSearch {
+    display: grid;
+    grid-template-columns: 4rem 3rem 1fr;
+    gap: 0.5rem 0.5rem;
+    justify-content: start;
+    justify-items: start;
+    align-content: start;
+    align-items: start;
+
+    button {
+        align-self: start;
+    }
+
+    &>div:nth-child(even) {
+        background-color: var(--clr-main1);
+    }
+}
+
+#cListSaved {
+    display: grid;
+    grid-template-columns: 4.5rem 2.5rem 3.5rem 3rem 1fr;
+    gap: 0.5rem 0.5rem;
+
+    input {
+        align-self: center;
+        height: 0.9rem;
+    }
+
+    button,
+    select {
+        align-self: start;
+    }
+
+    &>div:nth-child(even) {
+        background-color: var(--clr-main1);
+    }
+}
+
 .anime-card {
     display: grid;
     grid-template-rows: subgrid;
@@ -193,7 +228,7 @@ header {
     padding: 9px;
     margin: 0 auto;
 
-    @media (width < 800px) {
+    @media (width < 40rem) {
         flex-flow: column;
     }
 
@@ -223,43 +258,6 @@ header {
         width: 300px;
         height: 450px;
         object-fit: cover;
-    }
-}
-
-#cListSearch {
-    display: grid;
-    grid-template-columns: 4rem 3rem 1fr;
-    gap: 0.5rem 0.5rem;
-    justify-content: start;
-    justify-items: start;
-    align-content: start;
-    align-items: start;
-
-    button {
-        align-self: start;
-    }
-
-    &>div:nth-child(even) {
-        background-color: var(--clr-main1);
-    }
-}
-
-#cListSaved {
-    display: grid;
-    grid-template-columns: 4.5rem 2.5rem 3.5rem 3rem 1fr;
-    gap: 0.5rem 0.5rem;
-
-    input {
-        align-self: center;
-        height: 0.9rem;
-    }
-
-    button, select {
-        align-self: start;
-    }
-
-    &>div:nth-child(even) {
-        background-color: var(--clr-main1);
     }
 }
 
