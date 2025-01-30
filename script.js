@@ -1,4 +1,4 @@
-import { fetchJSON, formatDecimalPlaces } from "./util.js";
+import { fetchJSON } from "./util.js";
 
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -41,6 +41,7 @@ const hMain = document.querySelector("#cMain");
 hBtnSearch.addEventListener("click", onSearch);
 hBtnNext.addEventListener("click", onNextPage);
 hBtnPrev.addEventListener("click", onPrevPage);
+hChkTopSearch.addEventListener("click", onTopSearch);
 hChkFilterWatched.addEventListener("click", onFilterWatched);
 hChkShowList.addEventListener("click", onShowList);
 hTest.addEventListener("click", onTest);
@@ -136,6 +137,16 @@ async function onPrevPage(e) {
             pushStateSearch(gQuery, gPage);
     }
 }
+function onTopSearch(e) {
+    if (e.target.checked)
+    {
+        hTxtQuery.disabled = true;
+        hTxtQuery.classList.add("disabled");
+    } else {
+        hTxtQuery.disabled = false;
+        hTxtQuery.classList.remove("disabled");
+    }
+}
 function onFilterWatched(e) {
     showSaved(gMyAnimes);
 }
@@ -226,39 +237,46 @@ function onTitle(e) {
     }
 }
 async function onHistoryChanged(e) {
-    if (!e.state) {
+    const state = e.state;
+    if (!state) {
         gTab = 1;
         showHideElements(gTab);
         showSaved(gMyAnimes);
         document.title = "Mina Anime";
         return;
     }
-    document.title = e.state.title;
-    gTab = e.state.tab;
+    document.title = state.title;
+    gTab = state.tab;
     showHideElements(gTab);
     switch (gTab) {
         case 0: // Search tab
-            const useOldSearchResults = gQuery === e.state.query && gPage === e.state.page;
-            ({ query: gQuery, page: gPage } = e.state);
-            if (useOldSearchResults)
+            gPage = state.page;
+            if (state.topSearch) {
+                gSearchResults = await search("", state.page, true, state.type);
                 showSearchResults(gSearchResults);
-            else {
-                if (gQuery)
-                    gSearchResults = await search(gQuery, gPage);
-                else
-                    gSearchResults = [];
-                showSearchResults(gSearchResults);
+            } else {
+                const useOldSearchResults = gQuery === state.query && gPage === state.page;
+                gQuery = state.query;
+                if (useOldSearchResults)
+                    showSearchResults(gSearchResults);
+                else {
+                    if (gQuery)
+                        gSearchResults = await search(gQuery, gPage);
+                    else
+                        gSearchResults = [];
+                    showSearchResults(gSearchResults);
+                }
             }
             break;
         case 1: // Saved tab
             showSaved(gMyAnimes);
             break;
         case 2: // Single tab
-            let anime = gMyAnimes.find(a => a.id === e.state.id);
+            let anime = gMyAnimes.find(a => a.id === state.id);
             if (!anime && gSearchResults)
-                anime = gSearchResults.find(a => a.id === e.state.id);
+                anime = gSearchResults.find(a => a.id === state.id);
             if (!anime)
-                anime = await fetchAnime(e.state.id);
+                anime = await fetchAnime(state.id);
             showSingle(anime);
             break;
     }
@@ -299,7 +317,7 @@ async function search(query, page, topSearch, type) {
     if (topSearch)
         json = await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`);
     else
-        json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&page=${page}`);
+        json = await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&type=${type}&page=${page}`);
     console.log(json);
     const res = [];
     for (const ja of json.data) {
@@ -467,7 +485,7 @@ function showSingle(anime) {
     const hRightTopRow = document.createElement("div");
     hRightTopRow.classList.add("single-right-toprow");
     const hScore = document.createElement("span");
-    hScore.innerText = "Poäng: " + formatDecimalPlaces(anime.score, 1);
+    hScore.innerText = "Poäng: " + (anime.score ? anime.score.toFixed(1) : "");
     hRightTopRow.appendChild(hScore);
     if (anime.saved) {
         const hRatingLbl = document.createElement("label");
@@ -525,7 +543,7 @@ function createCard(anime, tab) {
 
     // #region Score
     const hScore = document.createElement("span");
-    hScore.innerText = "Poäng: " + formatDecimalPlaces(anime.score, 1);
+    hScore.innerText = "Poäng: " + (anime.score ? anime.score.toFixed(1) : "");
     hTopRow.appendChild(hScore);
     // #endregion
 
@@ -605,7 +623,7 @@ function createRow(anime, tab) {
     // #endregion
     // #region Score
     const hScore = document.createElement("span");
-    hScore.innerText = formatDecimalPlaces(anime.score, 1);
+    hScore.innerText = anime.score ? anime.score.toFixed(1) : "";
     hRow.appendChild(hScore);
     // #endregion
     // #region My rating
@@ -662,6 +680,10 @@ function showHideElements(tab) {
     hBtnSearch.hidden = tab !== 0;
     hBtnPrev.hidden = tab !== 0;
     hBtnNext.hidden = tab !== 0;
+    hLblTopSearch.hidden = tab !== 0;
+    hChkTopSearch.hidden = tab !== 0;
+    hLblType.hidden = tab !== 0;
+    hSelType.hidden = tab !== 0;
     hLblFilterWatched.hidden = tab !== 1;
     hChkFilterWatched.hidden = tab !== 1;
     hLblShowList.hidden = tab === 2;
@@ -712,6 +734,7 @@ function pushStateSearchTop(type, page) {
     // Adds a history state for the search tab
     const state = {
         tab: 0,
+        topSearch: true,
         type: type,
         page: page
     };

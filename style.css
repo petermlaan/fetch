@@ -35,6 +35,12 @@ input {
     font-size: large;
 }
 
+select {
+    background-color: var(--clr-main1);
+    color: var(--clr-main3);
+    font-size: large;
+}
+
 button {
     background-color: var(--clr-main0);
     color: var(--clr-main3);
@@ -78,46 +84,46 @@ header {
     background-color: var(--clr-main0);
     margin-bottom: 10px;
     height: 60px;
-}
 
-#topmenu {
-    display: grid;
-    justify-content: center;
-    height: 100%;
-
-    ul {
-        display: flex;
+    #topmenu {
+        display: grid;
+        justify-content: center;
         height: 100%;
-        list-style: none;
-        margin: 0;
-        padding: 0;
 
-        li {
-            height: 100%;
+        ul {
             display: flex;
+            height: 100%;
+            list-style: none;
+            margin: 0;
+            padding: 0;
 
-            a {
-                color: var(--clr-main3);
-                font-size: large;
-                font-weight: bold;
+            li {
                 height: 100%;
-                padding: 0 20px;
                 display: flex;
-                align-items: center;
-            }
-
-            &:hover {
-                background-color: var(--clr-main3);
 
                 a {
-                    color: var(--clr-main0);
+                    color: var(--clr-main3);
+                    font-size: large;
+                    font-weight: bold;
+                    height: 100%;
+                    padding: 0 20px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                &:hover {
+                    background-color: var(--clr-main3);
+
+                    a {
+                        color: var(--clr-main0);
+                    }
                 }
             }
         }
-    }
 
-    @media (width < 35rem) {
-        justify-content: end;
+        @media (width < 35rem) {
+            justify-content: end;
+        }
     }
 }
 
@@ -218,7 +224,9 @@ header {
     align-content: start;
     align-items: start;
 
-    button, select, input {
+    button,
+    select,
+    input {
         align-self: start;
     }
 
@@ -232,7 +240,9 @@ header {
     grid-template-columns: 4rem 2.5rem 3.5rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 
-    button, select, input {
+    button,
+    select,
+    input {
         align-self: start;
     }
 

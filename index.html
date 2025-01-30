@@ -28,21 +28,21 @@
 
     <main>
         <form id="frmSearch">
-            <input id="txtQuery" type="search" hidden />
-            <button id="btnSearch" type="submit" hidden>Sök</button>
-            <button id="btnPrevPage" class="disabled" disabled hidden>&lt; Föreg</button>
-            <button id="btnNextPage" class="disabled" disabled hidden>Nästa &gt;</button>
-            <button id="btnTest">Test</button>
-            <label id="lblTopSearch" for="chkTopSearch">Topsök
-                <input type="checkbox" id="chkTopSearch" />
+            <label id="lblTopSearch" for="chkTopSearch" hidden>Toppsök
+                <input type="checkbox" id="chkTopSearch" hidden />
             </label>
-            <label id="lblTopSearch" for="selCategory">Typ
-                <select id="selType">
+            <label id="lblType" for="selType" hidden>Typ
+                <select id="selType" hidden>
                     <option value=""></option>
                     <option value="tv">TV</option>
                     <option value="movie">Film</option>
                 </select>
             </label>
+            <input id="txtQuery" type="search" hidden />
+            <button id="btnSearch" type="submit" hidden>Sök</button>
+            <button id="btnPrevPage" class="disabled" disabled hidden>&lt; Föreg</button>
+            <button id="btnNextPage" class="disabled" disabled hidden>Nästa &gt;</button>
+            <button id="btnTest">Test</button>
             <label id="lblFilterWatched" for="chkFilterWatched">Dölj sedda
                 <input type="checkbox" id="chkFilterWatched" />
             </label>
