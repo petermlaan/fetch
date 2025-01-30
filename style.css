@@ -4,6 +4,7 @@
     --clr-main2: #057;
     --clr-main3: #9ef;
     --clr-main4: #fff;
+    --clr-disabled: #666;
 }
 
 html {
@@ -22,11 +23,6 @@ a {
     h1:hover {
         text-decoration: underline;
     }
-}
-
-select {
-    background-color: var(--clr-main2);
-    color: var(--clr-main3);
 }
 
 input {
@@ -51,19 +47,25 @@ button {
     font-weight: bold;
     border-radius: 1rem / 1rem;
     padding: 0 0.6rem;
+    height: 1.6rem;
+}
 
-    &:hover {
-        cursor: pointer;
-    }
-
+button:hover {
+    cursor: pointer;
+    background-color: var(--clr-main2);
 }
 
 button.disabled:hover {
     cursor: default;
+    background-color: var(--clr-disabled);
+}
+
+select:hover {
+    background-color: var(--clr-main2);
 }
 
 .disabled {
-    background-color: #777;
+    background-color: var(--clr-disabled);
     border: none;
 }
 
@@ -112,7 +114,7 @@ header {
                 display: flex;
 
                 a {
-                    color: var(--clr-main3);
+                    color: var(--clr-main4);
                     font-size: large;
                     font-weight: bold;
                     height: 100%;
@@ -233,9 +235,7 @@ header {
     align-content: start;
     align-items: start;
 
-    button,
-    select,
-    input {
+    button {
         align-self: start;
     }
 
@@ -254,9 +254,8 @@ header {
         height: 0.9rem;
     }
 
-    button {
+    button, select {
         align-self: start;
-        height: 1.7rem;
     }
 
     &>div:nth-child(even) {
