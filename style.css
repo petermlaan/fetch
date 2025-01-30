@@ -161,10 +161,6 @@ header {
     display: grid;
     grid-template-columns: 4rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
-    justify-content: start;
-    justify-items: start;
-    align-content: start;
-    align-items: start;
 
     button {
         align-self: start;
