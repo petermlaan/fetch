@@ -1,6 +1,6 @@
 # Mina Anime
 
-## Find animes and make a list of the ones your have watched or want to watch. Written in HTML, CSS and JavaScript. No libraries are used.
+## Find animes and make a list of the ones you have watched or want to watch. Written in HTML, CSS and JavaScript. No libraries are used.
 
 Mina Anime is an SPA (Single Page web Application) för finding and creating a list of anime movies and tv-shows. The user can mark which ones he has watched and rate them. The SPA is only available in Swedish.
 
