@@ -15,6 +15,7 @@ let gMyAnimes = []; // Saved animes
 let gQuery = ""; // The latest search query
 let gPage = 1; // search pagination
 let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
+
 // Last sort: true = ascending, false = descending.
 let gTitleSort = false;
 let gRatingSort = true;
@@ -50,7 +51,7 @@ hTest.addEventListener("click", onTest);
 document.querySelector("#frmSearch").addEventListener("submit", onSearch);
 document.querySelector("#mnuSearch").addEventListener("click", onSearchTab);
 document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
-window.addEventListener("popstate", onHistoryChanged)
+window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
 gMyAnimes = loadMyAnimes();
@@ -261,7 +262,7 @@ function onTitle(e) {
         showSaved(gMyAnimes);
     }
 }
-async function onHistoryChanged(e) {
+async function onWindowPopstate(e) {
     // The user clicked the forward or backward button in the browser
     const state = e.state;
     if (!state) {
