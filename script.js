@@ -120,6 +120,7 @@ async function onSearch(e) {
     }
     catch (err) {
         console.error(err);
+        alert("Vi har för tillfället problem med vår animedatabas. Försök igen senare!");
     }
 }
 async function onNextPage(e) {
