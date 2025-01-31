@@ -2,8 +2,8 @@ import { fetchJSON } from "./util.js";
 
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
-const API_URL_SEARCH = "anime?sfw&q="; // add query and optionally page=x
-const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add query, page=x, cat=y
+const API_URL_SEARCH = "anime?sfw&q="; // add query and page=x
+const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add type and page=x
 const API_URL_ANIME = "anime/"; // fetch a single anime by id
 const URL_BASE = "/myanime/"; // Our url when state pushing
 const LS_MODEL = "model"; // local storage key
@@ -15,6 +15,7 @@ let gMyAnimes = []; // Saved animes
 let gQuery = ""; // The latest search query
 let gPage = 1; // search pagination
 let gTab = 1; // For site navigation. 0 - search, 1 - saved, 2 - single
+// Last sort: true = ascending, false = descending.
 let gTitleSort = false;
 let gRatingSort = true;
 let gScoreSort = true;
@@ -58,6 +59,7 @@ window.history.scrollRestoration = "auto";
 
 // #region ----- Event listeners        ----- 
 function onSearchTab(e) {
+    // Show the search tab
     e.preventDefault();
     if (gTab !== 0) {
         gTab = 0;
@@ -67,6 +69,7 @@ function onSearchTab(e) {
     showSearchResults(gSearchResults);
 }
 function onSavedTab(e) {
+    // Show all saved animes as cards or in a list
     e.preventDefault();
     if (gTab !== 1) {
         pushStateSaved();
@@ -76,6 +79,7 @@ function onSavedTab(e) {
     showSaved(gMyAnimes);
 }
 function onSingleTab(e) {
+    // Show a detailed view for a single anime
     e.preventDefault();
     const anime = e.target.anime;
     if (gTab !== 2) {
@@ -86,12 +90,14 @@ function onSingleTab(e) {
     showSingle(anime);
 }
 function onShowList(e) {
+    // Show cards or a list for the search tab or the saved tab
     if (gTab === 0)
         showSearchResults(gSearchResults);
     else
         showSaved(gMyAnimes);
 }
 async function onSearch(e) {
+    // Search button pressed. Use the API to make the search.
     try {
         e.preventDefault();
         const hForm = document.querySelector("#frmSearch");
@@ -116,6 +122,7 @@ async function onSearch(e) {
     }
 }
 async function onNextPage(e) {
+    // Show the next page of the search results.
     e.preventDefault();
     if (gQuery || hChkTopSearch.checked) {
         gPage++;
@@ -128,6 +135,7 @@ async function onNextPage(e) {
     }
 }
 async function onPrevPage(e) {
+    // Show the previous page of the search results.
     e.preventDefault();
     if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
         gPage--;
@@ -140,6 +148,7 @@ async function onPrevPage(e) {
     }
 }
 function onTopSearch(e) {
+    // Switches beteen normal search and top search
     if (e.target.checked)
     {
         hTxtQuery.disabled = true;
@@ -150,9 +159,11 @@ function onTopSearch(e) {
     }
 }
 function onFilterWatched(e) {
+    // Switches between showing all saved animes or only unwatched ones.
     showSaved(gMyAnimes);
 }
 function onSavedAdd(e) {
+    // Adds the anime to the saved list
     const anime = e.target.anime;
     anime.saved = true;
     if (gMyAnimes.some(a => a.id === anime.id)) {
@@ -173,24 +184,29 @@ function onSavedAdd(e) {
     }
 }
 function onSavedRemove(e) {
+    // Removes the anime from the saved list
     const anime = e.target.anime;
     gMyAnimes.splice(gMyAnimes.findIndex(a => a.id === anime.id), 1);
     storeMyAnimes(gMyAnimes);
     showSaved(gMyAnimes);
 }
 function onClose(e) {
+    // Closes the single tab (details view)
     history.back();
 }
 function onSavedWatched(e) {
+    // Marks the anime as having been watched
     e.target.anime.watched = !e.target.anime.watched;
     storeMyAnimes(gMyAnimes);
 }
 function onRatingChange(e) {
+    // Sets the user rating for the anime
     const anime = e.target.anime;
     anime.myRating = +e.target.value;
     storeMyAnimes(gMyAnimes);
 }
 function onTitle(e) {
+    // Sort the list by the column title clicked
     e.preventDefault();
     const col = e.target.attributes["col"].value;
     if (gTab === 0) {
@@ -246,6 +262,7 @@ function onTitle(e) {
     }
 }
 async function onHistoryChanged(e) {
+    // The user clicked the forward or backward button in the browser
     const state = e.state;
     if (!state) {
         gTab = 1;
@@ -291,7 +308,7 @@ async function onHistoryChanged(e) {
     }
 }
 async function onTest(e) {
-    // Add some test data
+    // Adds two animes to the saved list (from a list of 21)
     async function addAnime(id) {
         const a = await fetchAnime(id);
         a.saved = true;
@@ -795,6 +812,7 @@ class Anime {
         this.saved = saved;
         this.watched = watched;
         this.myRating = myRating;
+        Object.freeze(this);
     }
 }
 // #endregion
