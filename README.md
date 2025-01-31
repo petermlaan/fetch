@@ -14,4 +14,4 @@ Bookmarks will only work for the index.html url. When the user navigates to anot
 
 The SPA uses Jikan REST API (https://docs.api.jikan.moe). No access key is required. The limit is 3 API calls per second and 60 per minute (no limits beyond that). The SPA makes one call for each click on the search button and may make one call when the user navigates back or forwards in the browser's history or clicks the next or previous button in the search page. It will also make two calls each time the test button is clicked. No other API calls will be made.
 
-The test button will add two animes to the saved list each time (from a list of 21). This has been added to make it easier to test the SPA. Be careful not to click on this button faster than once each second or you will hit the limit on the API.
+The test button will add two animes to the saved list each time (from a list of 21). This has been added to make it easier to test the SPA. Be careful not to click on this button faster than once each second or you will hit the limit of the API.
