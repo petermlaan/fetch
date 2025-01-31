@@ -8,7 +8,7 @@ View index.html with the live server extension in VS Code or use this raw githac
 
 https://raw.githack.com/petermlaan/fetch/main/index.html
 
-Opening index.html directly in the browser might not work due to secutity issues of loading javascript module files.
+Opening index.html directly in the browser might not work due to secutity restrictions of loading javascript module files.
 
 Bookmarks will only work for the index.html url. When the user navigates to another part of the SPA it will change the url and bookmarks for those url:s wont work (unless you host it in a web server that is configured to route those urls to index.html).
 
