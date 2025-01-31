@@ -12,6 +12,7 @@ const LS_MODEL = "model"; // local storage key
 // #region ----- Global variables       ----- 
 let gSearchResults = []; // Last search result
 let gSavedAnimes = []; // Animes saved by the user
+let gTopSearch = false; // Was the last search a top search?
 let gQuery = ""; // The last search query
 let gType = ""; // The last search type
 let gPage = 1; // for search pagination
@@ -105,17 +106,18 @@ async function onBtnSearch(e) {
         gPage = 1;
         const newQuery = hTxtQuery.value;
         const newType = hSelType.value;
-        const topSearch = hChkTopSearch.checked;
-        if (topSearch) {
+        const newTopSearch = hChkTopSearch.checked;
+        if (newTopSearch) {
             if (newType !== gType)
                 pushStateSearchTop(newType, gPage);
         } else {
             if (newQuery !== gQuery || newType !== gType)
-                pushStateSearch(newQuery, gPage);
+                pushStateSearch(newQuery, gPage, newType);
         }
         gQuery = newQuery;
         gType = newType;
-        gSearchResults = await search(gQuery, gPage, topSearch, gType, gSavedAnimes);
+        gTopSearch = newTopSearch;
+        gSearchResults = await search(gQuery, gPage, newTopSearch, gType, gSavedAnimes);
         showSearchResults(gSearchResults);
     }
     catch (err) {
@@ -266,6 +268,10 @@ function onHeaderRow(e) {
 async function onWindowPopstate(e) {
     // The user clicked the forward or backward button in the browser
     const state = e.state;
+    const url = window.location.href;
+    console.log(url);
+    const urlparams = new URLSearchParams(window.location.search);
+    console.log(urlparams);
     if (!state) {
         // No state object means this was the first page = saved tab
         gTab = 1;
@@ -282,12 +288,12 @@ async function onWindowPopstate(e) {
             gPage = state.page;
             console.log(state);
             if (state.topSearch) {
-                const useOldSearchResults = gType === state.type && gPage === state.page;
+                const useOldSearchResults = gType === state.type && gPage === state.page && gTopSearch === state.topSearch;
                 gType = state.type;
                 if (!useOldSearchResults)
                     gSearchResults = await search(null, gPage, true, state.type, gSavedAnimes);
             } else {
-                const useOldSearchResults = gQuery === state.query && gPage === state.page;
+                const useOldSearchResults = gQuery === state.query && gPage === state.page && gType === state.type && gTopSearch === state.topSearch;
                 gQuery = state.query;
                 if (!useOldSearchResults) {
                     if (gQuery)
@@ -763,8 +769,8 @@ function pushStateSearch(query, page, type) {
         tab: 0,
         topSearch: false,
         query: query,
-        page: page,
         type: type,
+        page: page,
     };
     pushState(`search?q=${query}&page=${page}`, state, " - Sök");
 }
@@ -774,7 +780,7 @@ function pushStateSearchTop(type, page) {
         tab: 0,
         topSearch: true,
         type: type,
-        page: page
+        page: page,
     };
     pushState(`search?type=${type}&page=${page}`, state, " - Sök");
 }
