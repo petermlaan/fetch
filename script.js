@@ -1,4 +1,4 @@
-import { fetchJSON } from "./util.js";
+import { fetchJSON, getParamBool, getParamNumber, getParamString } from "./util.js";
 
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -105,13 +105,6 @@ function onSingleTab(e) {
     showHideElements(gTab);
     showSingle(anime);
 }
-function onChkShowList(e) {
-    // Show cards or a list for the search tab or the saved tab
-    if (gTab === 0)
-        showSearchResults(gSearchResults);
-    else
-        showSaved(gSavedAnimes);
-}
 async function onBtnSearch(e) {
     // Search button pressed. Use the API to make the search.
     try {
@@ -120,17 +113,20 @@ async function onBtnSearch(e) {
         const newQuery = hTxtQuery.value;
         const newType = hSelType.value;
         const newTopSearch = hChkTopSearch.checked;
+        let hasNextPage = false;
+        [gSearchResults, hasNextPage] = await search(newQuery, gPage, newTopSearch, newType, gSavedAnimes);
+        checkNextPrev(hasNextPage, gPage);
         if (newTopSearch) {
-            if (newType !== gType)
-                pushStateSearchTop(newType, gPage);
+            hTxtQuery.value = "";
+            if (newType !== gType || newTopSearch !== gTopSearch)
+                pushStateSearchTop(newType, gPage, hasNextPage);
         } else {
             if (newQuery !== gQuery || newType !== gType)
-                pushStateSearch(newQuery, gPage, newType);
+                pushStateSearch(newQuery, gPage, newType, hasNextPage);
         }
         gQuery = newQuery;
         gType = newType;
         gTopSearch = newTopSearch;
-        gSearchResults = await search(gQuery, gPage, newTopSearch, gType, gSavedAnimes);
         showSearchResults(gSearchResults);
     }
     catch (err) {
@@ -143,12 +139,14 @@ async function onBtnNextPage(e) {
     e.preventDefault();
     if (gQuery || hChkTopSearch.checked) {
         gPage++;
-        gSearchResults = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
+        let hasNextPage = false;
+        [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
         showSearchResults(gSearchResults);
+        checkNextPrev(hasNextPage, gPage);
         if (hChkTopSearch.checked)
-            pushStateSearchTop(hSelType.value, gPage);
+            pushStateSearchTop(hSelType.value, gPage, hasNextPage);
         else
-            pushStateSearch(gQuery, gPage);
+            pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
     }
 }
 async function onBtnPrevPage(e) {
@@ -156,23 +154,26 @@ async function onBtnPrevPage(e) {
     e.preventDefault();
     if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
         gPage--;
-        gSearchResults = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
+        let hasNextPage = false;
+        [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
         showSearchResults(gSearchResults);
+        checkNextPrev(hasNextPage, gPage);
         if (hChkTopSearch.checked)
-            pushStateSearchTop(hSelType.value, gPage);
+            pushStateSearchTop(hSelType.value, gPage, hasNextPage);
         else
-            pushStateSearch(gQuery, gPage);
+            pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
     }
+}
+function onChkShowList(e) {
+    // Switches between cards or a list for the search tab or the saved tab
+    if (gTab === 0)
+        showSearchResults(gSearchResults);
+    else
+        showSaved(gSavedAnimes);
 }
 function onChkTopSearch(e) {
     // Switches beteen normal search and top search
-    if (e.target.checked) {
-        hTxtQuery.disabled = true;
-        hTxtQuery.classList.add("disabled");
-    } else {
-        hTxtQuery.disabled = false;
-        hTxtQuery.classList.remove("disabled");
-    }
+    checkTopSearch();
 }
 function onChkFilterWatched(e) {
     // Switches between showing all saved animes or only unwatched ones.
@@ -280,32 +281,23 @@ function onHeaderRow(e) {
 async function onWindowPopstate(e) {
     // The user clicked the forward or backward button in the browser
     const params = new URLSearchParams(window.location.search);
-    console.log(params);
-    if (!params.has(URL_PARAM_TAB)) {
-        // No tab param means this was the first page = saved tab
-        gTab = 1;
-        document.title = TITLES[gTab];
-        showHideElements(gTab);
-        showSaved(gSavedAnimes);
-        return;
-    }
-    gTab = +params.get(URL_PARAM_TAB);
-    document.title = TITLES[gTab];
-    showHideElements(gTab);
+    gTab = getParamNumber(params, URL_PARAM_TAB, 1);
     switch (gTab) {
         case 0: // Search tab
-            const newTopSearch = params.has(URL_PARAM_TOPSEARCH) ? +params.get(URL_PARAM_TOPSEARCH) : 0;
-            const newType = params.has(URL_PARAM_TYPE) ? params.get(URL_PARAM_TYPE) : "";
-            const newQuery = params.has(URL_PARAM_QUERY) ? params.get(URL_PARAM_QUERY) : "";
-            const newPage = params.has(URL_PARAM_PAGE) ? +params.get(URL_PARAM_PAGE) : 1;
+            const newTopSearch = getParamBool(params, URL_PARAM_TOPSEARCH, false);
+            hChkTopSearch.checked = newTopSearch;
+            const newType = getParamString(params, URL_PARAM_TYPE, "");
+            hSelType.value = newType;
+            const newQuery = getParamString(params, URL_PARAM_QUERY, "");
+            hTxtQuery.value = newQuery;
+            const newPage = getParamNumber(params, URL_PARAM_PAGE, 1);
             if (newTopSearch) {
                 // Check if we can reuse the old search result
-                if (!(gType === newType && gPage === newPage && gTopSearch === newTopSearch))
-                {
+                if (!(gType === newType && gPage === newPage && gTopSearch === newTopSearch)) {
                     gType = newType;
                     gPage = newPage;
                     gTopSearch = newTopSearch;
-                    gSearchResults = await search(null, gPage, true, gType, gSavedAnimes);
+                    [gSearchResults] = await search(null, gPage, true, gType, gSavedAnimes);
                 }
             } else {
                 // Check if we can reuse the old search result
@@ -314,9 +306,9 @@ async function onWindowPopstate(e) {
                     gPage = newPage;
                     gType = newType;
                     gTopSearch = newTopSearch;
-                    if (gQuery)
-                        gSearchResults = await search(gQuery, gPage, false, gType, gSavedAnimes);
-                    else
+                    if (gQuery) {
+                        [gSearchResults] = await search(gQuery, gPage, false, gType, gSavedAnimes);
+                    } else
                         gSearchResults = [];
                 }
             }
@@ -335,10 +327,16 @@ async function onWindowPopstate(e) {
                 if (!anime)
                     anime = await fetchAnime(id);
                 showSingle(anime);
-            } else
-                showSaved();
+            } else {
+                gTab = 1;
+                showSaved(gSavedAnimes);
+            }
             break;
     }
+    document.title = TITLES[gTab];
+    showHideElements(gTab);
+    checkTopSearch();
+    checkNextPrev(e.state ? e.state.hasNextPage : false, gPage);
 }
 async function onTest(e) {
     // Adds two animes to the saved list (from a list of 21)
@@ -370,15 +368,15 @@ async function onTest(e) {
 
 // #region ----- Other functions        ----- 
 async function search(query, page, topSearch, type, savedAnimes) {
-    // Sends a search query to the API and returns an array of anime objects.
-    // Also disables or enables next and prev page buttons.
-    // topSearch = results are sorted by score.
-    // query is not used if topSearch = true.
+    /* Sends a search query to the API.
+       Returns an array of anime objects and has_next_page.
+       topSearch = results are sorted by score.
+       query is not used if topSearch = true. */
     const json = topSearch ?
         await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`) :
         await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&type=${type}&page=${page}`);
     console.log(json);
-    const res = [];
+    const animes = [];
     for (const ja of json.data) {
         let a = new Anime(
             ja.mal_id,
@@ -397,10 +395,9 @@ async function search(query, page, topSearch, type, savedAnimes) {
         const savedanime = savedAnimes.find(b => b.id === a.id);
         if (savedanime)
             a = savedanime;
-        res.push(a);
+        animes.push(a);
     }
-    checkNextPrev(json.pagination);
-    return res;
+    return [animes, json.pagination.has_next_page];
 }
 async function fetchAnime(id) {
     // Fetches anime info from the API and returns an anime object.
@@ -755,7 +752,7 @@ function showHideElements(tab) {
     hChkShowList.hidden = tab === 2;
     hTest.hidden = tab === 2;
 }
-function checkNextPrev({ has_next_page, current_page }) {
+function checkNextPrev(has_next_page, current_page) {
     // Next page button
     if (has_next_page) {
         hBtnNext.disabled = false;
@@ -773,6 +770,16 @@ function checkNextPrev({ has_next_page, current_page }) {
         hBtnPrev.classList.add("disabled");
     }
 }
+function checkTopSearch() {
+    // Switches beteen normal search and top search
+    if (hChkTopSearch.checked) {
+        hTxtQuery.disabled = true;
+        hTxtQuery.classList.add("disabled");
+    } else {
+        hTxtQuery.disabled = false;
+        hTxtQuery.classList.remove("disabled");
+    }
+}
 function loadSavedAnimes() {
     // Loads saved animes from local storage and returns them.
     let res = [];
@@ -786,10 +793,9 @@ function storeSavedAnimes(animes) {
     // Stores the animes in local storage
     localStorage.setItem(LS_MODEL, JSON.stringify(animes));
 }
-function pushStateSearch(query, page, type) {
+function pushStateSearch(query, page, type, hasNextPage) {
     // Adds a history state for the search tab
     const url = new URL(window.location.href);
-    console.log("pushStateSearch: " + url);
     const params = new URLSearchParams();
     params.set(URL_PARAM_TAB, 0);
     params.set(URL_PARAM_TOPSEARCH, 0);
@@ -797,24 +803,24 @@ function pushStateSearch(query, page, type) {
     params.set(URL_PARAM_QUERY, query);
     params.set(URL_PARAM_PAGE, page);
     url.search = params.toString();
-    pushState(url, " - Sök");
+    const state = { hasNextPage: hasNextPage };
+    pushState(url, " - Sök", state);
 }
-function pushStateSearchTop(type, page) {
+function pushStateSearchTop(type, page, hasNextPage) {
     // Adds a history state for the search tab
     const url = new URL(window.location.href);
-    console.log("pushStateSearchTop: " + url);
     const params = new URLSearchParams();
     params.set(URL_PARAM_TAB, 0);
     params.set(URL_PARAM_TOPSEARCH, 1);
     params.set(URL_PARAM_TYPE, type);
     params.set(URL_PARAM_PAGE, page);
     url.search = params.toString();
-    pushState(url, " - Sök");
+    const state = { hasNextPage: hasNextPage };
+    pushState(url, " - Sök", state);
 }
 function pushStateSaved() {
     // Adds a history state for the saved tab
     const url = new URL(window.location.href);
-    console.log("pushStateSearchTop: " + url);
     const params = new URLSearchParams();
     params.set(URL_PARAM_TAB, 1);
     url.search = params.toString();
@@ -829,11 +835,11 @@ function pushStateSingle(id) {
     url.search = params.toString();
     pushState(url, " - Sök");
 }
-function pushState(url, titleEnd) {
+function pushState(url, titleEnd, state) {
     // Adds a history state to enable back and forth browser navigation
     const title = "Mina Anime" + titleEnd;
     document.title = title;
-    window.history.pushState(null, title, url);
+    window.history.pushState(state, title, url);
 }
 // #endregion
 
