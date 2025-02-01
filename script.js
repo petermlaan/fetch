@@ -64,8 +64,7 @@ window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
 gSavedAnimes = loadSavedAnimes();
-//showSaved(gSavedAnimes);
-onWindowPopstate({});
+onWindowPopstate({}); // Parse the current url
 window.history.scrollRestoration = "auto";
 
 // #region ----- Event listeners        ----- 
