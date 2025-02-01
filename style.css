@@ -11,6 +11,7 @@ h1 {
     color: var(--clr-main4);
     font-family: "Style Script", serif;
     font-style: normal;
+    font-weight: normal;
     position: absolute;
     margin: 0 0 0 20px;
     line-height: 60px;
@@ -173,7 +174,7 @@ header {
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4.5rem 2.5rem 3.5rem 3rem 1fr;
+    grid-template-columns: 4.5rem 2.5rem 3.5rem 3.5rem 1fr;
     gap: 0.5rem 0.5rem;
 
     input {

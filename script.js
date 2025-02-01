@@ -750,7 +750,7 @@ function showHideElements(tab) {
     hChkFilterWatched.hidden = tab !== 1;
     hLblShowList.hidden = tab === 2;
     hChkShowList.hidden = tab === 2;
-    hTest.hidden = tab === 2;
+    hTest.hidden = tab !== 1;
 }
 function checkNextPrev(has_next_page, current_page) {
     // Next page button
@@ -861,7 +861,6 @@ class Anime {
         this.saved = saved;
         this.watched = watched;
         this.myRating = myRating;
-        Object.freeze(this);
     }
 }
 // #endregion
