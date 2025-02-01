@@ -6,7 +6,7 @@ const API_URL_ANIME = "anime/"; // fetch a single anime by id
 const API_URL_SEARCH = "anime?sfw&q="; // add query and page=x
 const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add type and page=x
 const LS_MODEL = "model"; // local storage key
-const TITLES = [" - Sök", "", " - Detaljer"].map(t => "Mina Anime" + t);
+const TITLES = [" - Sök", "", " - "].map(t => "Mina Anime" + t);
 // URL parameters for this page
 const URL_PARAM_TAB = "tab";
 const URL_PARAM_QUERY = "q";
@@ -64,7 +64,8 @@ window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
 gSavedAnimes = loadSavedAnimes();
-showSaved(gSavedAnimes);
+//showSaved(gSavedAnimes);
+onWindowPopstate({});
 window.history.scrollRestoration = "auto";
 
 // #region ----- Event listeners        ----- 
@@ -100,7 +101,7 @@ function onSingleTab(e) {
     if (gTab !== 2) {
         // This means that we have switched tab
         gTab = 2;
-        pushStateSingle(anime.id);
+        pushStateSingle(anime);
     }
     showHideElements(gTab);
     showSingle(anime);
@@ -280,6 +281,7 @@ function onHeaderRow(e) {
 }
 async function onWindowPopstate(e) {
     // The user clicked the forward or backward button in the browser
+    let hasNextPage = false;
     const params = new URLSearchParams(window.location.search);
     gTab = getParamNumber(params, URL_PARAM_TAB, 1);
     switch (gTab) {
@@ -297,7 +299,7 @@ async function onWindowPopstate(e) {
                     gType = newType;
                     gPage = newPage;
                     gTopSearch = newTopSearch;
-                    [gSearchResults] = await search(null, gPage, true, gType, gSavedAnimes);
+                    [gSearchResults, hasNextPage] = await search(null, gPage, true, gType, gSavedAnimes);
                 }
             } else {
                 // Check if we can reuse the old search result
@@ -307,7 +309,7 @@ async function onWindowPopstate(e) {
                     gType = newType;
                     gTopSearch = newTopSearch;
                     if (gQuery) {
-                        [gSearchResults] = await search(gQuery, gPage, false, gType, gSavedAnimes);
+                        [gSearchResults, hasNextPage] = await search(gQuery, gPage, false, gType, gSavedAnimes);
                     } else
                         gSearchResults = [];
                 }
@@ -336,7 +338,7 @@ async function onWindowPopstate(e) {
     document.title = TITLES[gTab];
     showHideElements(gTab);
     checkTopSearch();
-    checkNextPrev(e.state ? e.state.hasNextPage : false, gPage);
+    checkNextPrev(e.state ? e.state.hasNextPage : hasNextPage, gPage);
 }
 async function onTest(e) {
     // Adds two animes to the saved list (from a list of 21)
@@ -804,7 +806,7 @@ function pushStateSearch(query, page, type, hasNextPage) {
     params.set(URL_PARAM_PAGE, page);
     url.search = params.toString();
     const state = { hasNextPage: hasNextPage };
-    pushState(url, " - Sök", state);
+    pushState(url, TITLES[0], state);
 }
 function pushStateSearchTop(type, page, hasNextPage) {
     // Adds a history state for the search tab
@@ -816,7 +818,7 @@ function pushStateSearchTop(type, page, hasNextPage) {
     params.set(URL_PARAM_PAGE, page);
     url.search = params.toString();
     const state = { hasNextPage: hasNextPage };
-    pushState(url, " - Sök", state);
+    pushState(url, TITLES[0], state);
 }
 function pushStateSaved() {
     // Adds a history state for the saved tab
@@ -824,20 +826,19 @@ function pushStateSaved() {
     const params = new URLSearchParams();
     params.set(URL_PARAM_TAB, 1);
     url.search = params.toString();
-    pushState(url, " - Sök");
+    pushState(url, TITLES[1]);
 }
-function pushStateSingle(id) {
+function pushStateSingle({id, title_en}) {
     // Adds a history state for the details tab
     const url = new URL(window.location.href);
     const params = new URLSearchParams();
     params.set(URL_PARAM_TAB, 2);
     params.set(URL_PARAM_ANIME_ID, id);
     url.search = params.toString();
-    pushState(url, " - Sök");
+    pushState(url, TITLES[2] + title_en);
 }
-function pushState(url, titleEnd, state) {
+function pushState(url, title, state) {
     // Adds a history state to enable back and forth browser navigation
-    const title = "Mina Anime" + titleEnd;
     document.title = title;
     window.history.pushState(state, title, url);
 }
