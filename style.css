@@ -142,6 +142,7 @@ header {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     gap: 0.4rem;
     font-size: larger;
 }
@@ -174,7 +175,7 @@ header {
 
 #cListSaved {
     display: grid;
-    grid-template-columns: 4.5rem 2.5rem 3.5rem 3.5rem 1fr;
+    grid-template-columns: 4.5rem 2.5rem 3.5rem 4rem 1fr;
     gap: 0.5rem 0.5rem;
 
     input {
@@ -204,6 +205,7 @@ header {
     .card-toprow {
         display: flex;
         justify-content: space-between;
+        align-items: center;
     }
 
     .poster {
@@ -238,6 +240,7 @@ header {
         .single-left-toprow {
             display: grid;
             grid-template-columns: auto auto 1fr auto;
+            align-items: center;
             gap: 0.5rem;
 
             :nth-child(3) {
@@ -255,6 +258,7 @@ header {
     .single-right-toprow {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 0.5rem;
     }
 }
