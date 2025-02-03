@@ -164,10 +164,6 @@ header {
     grid-template-columns: 4rem 3rem 1fr;
     gap: 0.5rem 0.5rem;
 
-    button {
-        align-self: start;
-    }
-
     &>div:nth-child(even) {
         background-color: var(--clr-main1);
     }
@@ -179,18 +175,23 @@ header {
     gap: 0.5rem 0.5rem;
 
     input {
-        align-self: center;
         height: 0.9rem;
     }
 
-    button,
-    select {
-        align-self: start;
+    * {
+        align-self: center;
     }
 
     &>div:nth-child(even) {
         background-color: var(--clr-main1);
     }
+}
+
+#errormsg {
+    color: #faa;
+    font-size: x-large;
+    text-align: center;
+    margin-top: 5rem;
 }
 
 .anime-card {

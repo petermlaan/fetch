@@ -7,6 +7,11 @@ const API_URL_SEARCH = "anime?sfw&q="; // add query and page=x
 const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add type and page=x
 const LS_MODEL = "model"; // local storage key
 const TITLES = [" - Sök", "", " - "].map(t => "Mina Anime" + t);
+
+// Felmeddelanden
+const ERR_API = "Vi har för tillfället problem med vår animedatabas. Försök igen senare!";
+const ERR_GENERIC = "Någonting gick fel. Försök igen senare!";
+
 // URL parameters for this page
 const URL_PARAM_TAB = "tab";
 const URL_PARAM_QUERY = "q";
@@ -63,47 +68,62 @@ document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
+window.history.scrollRestoration = "auto";
 gSavedAnimes = loadSavedAnimes();
 onWindowPopstate({}); // Parse the current url
-window.history.scrollRestoration = "auto";
 
 // #region ----- Event listeners        ----- 
 function onSearchTab(e) {
     // Show the search tab
-    e.preventDefault();
-    if (gTab !== 0) {
-        // This means that we have switched tab
-        gTab = 0;
-        if (hChkTopSearch.checked)
-            pushStateSearchTop(gType, gPage);
-        else
-            pushStateSearch(gQuery, gPage, gType);
+    try {
+        e.preventDefault();
+        if (gTab !== 0) {
+            // This means that we have switched tab
+            gTab = 0;
+            if (hChkTopSearch.checked)
+                pushStateSearchTop(gType, gPage);
+            else
+                pushStateSearch(gQuery, gPage, gType);
+        }
+        showHideElements(gTab);
+        showSearchResults(gSearchResults); // Show the old search results, if any
     }
-    showHideElements(gTab);
-    showSearchResults(gSearchResults);
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onSavedTab(e) {
     // Show all saved animes as cards or in a list
-    e.preventDefault();
-    if (gTab !== 1) {
-        // This means that we have switched tab
-        gTab = 1;
-        pushStateSaved();
+    try {
+        e.preventDefault();
+        if (gTab !== 1) {
+            // This means that we have switched tab
+            gTab = 1;
+            pushStateSaved();
+        }
+        showHideElements(gTab);
+        showSaved(gSavedAnimes);
     }
-    showHideElements(gTab);
-    showSaved(gSavedAnimes);
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onSingleTab(e) {
     // Show a detailed view for a single anime
-    e.preventDefault();
-    const anime = e.target.anime;
-    if (gTab !== 2) {
-        // This means that we have switched tab
-        gTab = 2;
-        pushStateSingle(anime);
+    try {
+        e.preventDefault();
+        const anime = e.target.anime;
+        if (gTab !== 2) {
+            // This means that we have switched tab
+            gTab = 2;
+            pushStateSingle(anime);
+        }
+        showHideElements(gTab);
+        showSingle(anime);
     }
-    showHideElements(gTab);
-    showSingle(anime);
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 async function onBtnSearch(e) {
     // Search button pressed. Use the API to make the search.
@@ -130,214 +150,274 @@ async function onBtnSearch(e) {
         showSearchResults(gSearchResults);
     }
     catch (err) {
-        console.error(err);
-        alert("Vi har för tillfället problem med vår animedatabas. Försök igen senare!");
+        showError(ERR_API);
     }
 }
 async function onBtnNextPage(e) {
     // Show the next page of the search results.
-    e.preventDefault();
-    if (gQuery || hChkTopSearch.checked) {
-        gPage++;
-        let hasNextPage = false;
-        [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
-        showSearchResults(gSearchResults);
-        checkNextPrev(hasNextPage, gPage);
-        if (hChkTopSearch.checked)
-            pushStateSearchTop(hSelType.value, gPage, hasNextPage);
-        else
-            pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
+    try {
+        e.preventDefault();
+        if (gQuery || hChkTopSearch.checked) {
+            gPage++;
+            let hasNextPage = false;
+            [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
+            showSearchResults(gSearchResults);
+            checkNextPrev(hasNextPage, gPage);
+            if (hChkTopSearch.checked)
+                pushStateSearchTop(hSelType.value, gPage, hasNextPage);
+            else
+                pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
+        }
+    }
+    catch (err) {
+        showError(ERR_API);
     }
 }
 async function onBtnPrevPage(e) {
     // Show the previous page of the search results.
-    e.preventDefault();
-    if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
-        gPage--;
-        let hasNextPage = false;
-        [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
-        showSearchResults(gSearchResults);
-        checkNextPrev(hasNextPage, gPage);
-        if (hChkTopSearch.checked)
-            pushStateSearchTop(hSelType.value, gPage, hasNextPage);
-        else
-            pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
+    try {
+        e.preventDefault();
+        if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
+            gPage--;
+            let hasNextPage = false;
+            [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
+            throw new Error("ett fel har felat!");
+            showSearchResults(gSearchResults);
+            checkNextPrev(hasNextPage, gPage);
+            if (hChkTopSearch.checked)
+                pushStateSearchTop(hSelType.value, gPage, hasNextPage);
+            else
+                pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
+        }
+    }
+    catch (err) {
+        showError(ERR_API);
     }
 }
 function onChkShowList(e) {
     // Switches between cards or a list for the search tab or the saved tab
-    if (gTab === 0)
-        showSearchResults(gSearchResults);
-    else
-        showSaved(gSavedAnimes);
+    try {
+        if (gTab === 0)
+            showSearchResults(gSearchResults);
+        else
+            showSaved(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onChkTopSearch(e) {
     // Switches beteen normal search and top search
-    checkTopSearch();
+    try {
+        checkTopSearch();
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onChkFilterWatched(e) {
     // Switches between showing all saved animes or only unwatched ones.
-    showSaved(gSavedAnimes);
+    try {
+        showSaved(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onBtnSave(e) {
     // Adds the anime to the saved list
-    const anime = e.target.anime;
-    anime.saved = true;
-    if (gSavedAnimes.some(a => a.id === anime.id)) {
-        alert("Redan sparad");
-        return;
+    try {
+        const anime = e.target.anime;
+        anime.saved = true;
+        if (gSavedAnimes.some(a => a.id === anime.id)) {
+            alert("Redan sparad");
+            return;
+        }
+        gSavedAnimes.unshift(anime);
+        storeSavedAnimes(gSavedAnimes);
+        if (gTab === 2)
+            showSaved(gSavedAnimes);
+        else {
+            // remove the card/row
+            if (hChkShowList.checked)
+                e.target.parentElement.remove();
+            else
+                e.target.parentElement.parentElement.remove();
+            gSearchResults.splice(gSearchResults.findIndex(a => a.id === anime.id), 1);
+        }
     }
-    gSavedAnimes.unshift(anime);
-    storeSavedAnimes(gSavedAnimes);
-    if (gTab === 2)
-        showSaved(gSavedAnimes);
-    else {
-        // remove the card/row
-        if (hChkShowList.checked)
-            e.target.parentElement.remove();
-        else
-            e.target.parentElement.parentElement.remove();
-        gSearchResults.splice(gSearchResults.findIndex(a => a.id === anime.id), 1);
+    catch (err) {
+        showError(ERR_GENERIC);
     }
 }
 function onBtnRemove(e) {
     // Removes the anime from the saved list
-    const anime = e.target.anime;
-    gSavedAnimes.splice(gSavedAnimes.findIndex(a => a.id === anime.id), 1);
-    storeSavedAnimes(gSavedAnimes);
-    showSaved(gSavedAnimes);
+    try {
+        const anime = e.target.anime;
+        gSavedAnimes.splice(gSavedAnimes.findIndex(a => a.id === anime.id), 1);
+        storeSavedAnimes(gSavedAnimes);
+        showSaved(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onBtnClose(e) {
     // Closes the single tab (details view)
-    history.back();
+    try {
+        history.back();
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onChkWatched(e) {
     // Marks the anime as having been watched
-    e.target.anime.watched = !e.target.anime.watched;
-    storeSavedAnimes(gSavedAnimes);
+    try {
+        e.target.anime.watched = !e.target.anime.watched;
+        storeSavedAnimes(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onSelRating(e) {
     // Sets the user rating for the anime
-    const anime = e.target.anime;
-    anime.myRating = +e.target.value;
-    storeSavedAnimes(gSavedAnimes);
+    try {
+        const anime = e.target.anime;
+        anime.myRating = +e.target.value;
+        storeSavedAnimes(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
+    }
 }
 function onHeaderRow(e) {
     // Sort the list by the column title clicked
-    e.preventDefault();
-    const col = e.target.attributes["col"].value;
-    if (gTab === 0) {
-        switch (col) {
-            case "1": // Score column
-                if (gScoreSort) // sort a->z or z->a?
-                    gSearchResults.sort((a, b) => b.score - a.score);
-                else
-                    gSearchResults.sort((a, b) => a.score - b.score);
-                gScoreSort = !gScoreSort; // switch sort order for next time
-                break;
-            case "2": // Title column
-                if (gTitleSort) // sort a->z or z->a?
-                    gSearchResults.sort((a, b) => b.title_en.localeCompare(a.title_en));
-                else
-                    gSearchResults.sort((a, b) => a.title_en.localeCompare(b.title_en));
-                gTitleSort = !gTitleSort; // switch sort order for next time
-                break;
+    try {
+        e.preventDefault();
+        const col = e.target.attributes["col"].value;
+        if (gTab === 0) {
+            switch (col) {
+                case "1": // Score column
+                    if (gScoreSort) // sort a->z or z->a?
+                        gSearchResults.sort((a, b) => b.score - a.score);
+                    else
+                        gSearchResults.sort((a, b) => a.score - b.score);
+                    gScoreSort = !gScoreSort; // switch sort order for next time
+                    break;
+                case "2": // Title column
+                    if (gTitleSort) // sort a->z or z->a?
+                        gSearchResults.sort((a, b) => b.title_en.localeCompare(a.title_en));
+                    else
+                        gSearchResults.sort((a, b) => a.title_en.localeCompare(b.title_en));
+                    gTitleSort = !gTitleSort; // switch sort order for next time
+                    break;
+            }
+            showSearchResults(gSearchResults);
+        } else {
+            switch (col) {
+                case "1": // Score column
+                    if (gWatchedSort) // sort a->z or z->a?
+                        gSavedAnimes.sort((a, b) => b.watched - a.watched);
+                    else
+                        gSavedAnimes.sort((a, b) => a.watched - b.watched);
+                    gWatchedSort = !gWatchedSort; // switch sort order for next time
+                    break;
+                case "2": // Score column
+                    if (gScoreSort) // sort a->z or z->a?
+                        gSavedAnimes.sort((a, b) => b.score - a.score);
+                    else
+                        gSavedAnimes.sort((a, b) => a.score - b.score);
+                    gScoreSort = !gScoreSort; // switch sort order for next time
+                    break;
+                case "3": // Rating column
+                    if (gRatingSort) // sort a->z or z->a?
+                        gSavedAnimes.sort((a, b) => b.myRating - a.myRating);
+                    else
+                        gSavedAnimes.sort((a, b) => a.myRating - b.myRating);
+                    gRatingSort = !gRatingSort; // switch sort order for next time
+                    break;
+                case "4": // Title column
+                    if (gTitleSort) // sort a->z or z->a?
+                        gSavedAnimes.sort((a, b) => b.title_en.localeCompare(a.title_en));
+                    else
+                        gSavedAnimes.sort((a, b) => a.title_en.localeCompare(b.title_en));
+                    gTitleSort = !gTitleSort; // switch sort order for next time
+                    break;
+            }
+            showSaved(gSavedAnimes);
         }
-        showSearchResults(gSearchResults);
-    } else {
-        switch (col) {
-            case "1": // Score column
-                if (gWatchedSort) // sort a->z or z->a?
-                    gSavedAnimes.sort((a, b) => b.watched - a.watched);
-                else
-                    gSavedAnimes.sort((a, b) => a.watched - b.watched);
-                gWatchedSort = !gWatchedSort; // switch sort order for next time
-                break;
-            case "2": // Score column
-                if (gScoreSort) // sort a->z or z->a?
-                    gSavedAnimes.sort((a, b) => b.score - a.score);
-                else
-                    gSavedAnimes.sort((a, b) => a.score - b.score);
-                gScoreSort = !gScoreSort; // switch sort order for next time
-                break;
-            case "3": // Rating column
-                if (gRatingSort) // sort a->z or z->a?
-                    gSavedAnimes.sort((a, b) => b.myRating - a.myRating);
-                else
-                    gSavedAnimes.sort((a, b) => a.myRating - b.myRating);
-                gRatingSort = !gRatingSort; // switch sort order for next time
-                break;
-            case "4": // Title column
-                if (gTitleSort) // sort a->z or z->a?
-                    gSavedAnimes.sort((a, b) => b.title_en.localeCompare(a.title_en));
-                else
-                    gSavedAnimes.sort((a, b) => a.title_en.localeCompare(b.title_en));
-                gTitleSort = !gTitleSort; // switch sort order for next time
-                break;
-        }
-        showSaved(gSavedAnimes);
+    }
+    catch (err) {
+        showError(ERR_GENERIC);
     }
 }
 async function onWindowPopstate(e) {
     // The user clicked the forward or backward button in the browser
-    let hasNextPage = false;
-    const params = new URLSearchParams(window.location.search);
-    gTab = getParamNumber(params, URL_PARAM_TAB, 1);
-    switch (gTab) {
-        case 0: // Search tab
-            const newTopSearch = getParamBool(params, URL_PARAM_TOPSEARCH, false);
-            hChkTopSearch.checked = newTopSearch;
-            const newType = getParamString(params, URL_PARAM_TYPE, "");
-            hSelType.value = newType;
-            const newQuery = getParamString(params, URL_PARAM_QUERY, "");
-            hTxtQuery.value = newQuery;
-            const newPage = getParamNumber(params, URL_PARAM_PAGE, 1);
-            if (newTopSearch) {
-                // Check if we can reuse the old search result
-                if (!(gType === newType && gPage === newPage && gTopSearch === newTopSearch)) {
-                    gType = newType;
-                    gPage = newPage;
-                    gTopSearch = newTopSearch;
-                    [gSearchResults, hasNextPage] = await search(null, gPage, true, gType, gSavedAnimes);
+    try {
+        let hasNextPage = false;
+        const params = new URLSearchParams(window.location.search);
+        gTab = getParamNumber(params, URL_PARAM_TAB, 1);
+        switch (gTab) {
+            case 0: // Search tab
+                const newTopSearch = getParamBool(params, URL_PARAM_TOPSEARCH, false);
+                hChkTopSearch.checked = newTopSearch;
+                const newType = getParamString(params, URL_PARAM_TYPE, "");
+                hSelType.value = newType;
+                const newQuery = getParamString(params, URL_PARAM_QUERY, "");
+                hTxtQuery.value = newQuery;
+                const newPage = getParamNumber(params, URL_PARAM_PAGE, 1);
+                if (newTopSearch) {
+                    // Check if we can reuse the old search result
+                    if (!(gType === newType && gPage === newPage && gTopSearch === newTopSearch)) {
+                        gType = newType;
+                        gPage = newPage;
+                        gTopSearch = newTopSearch;
+                        [gSearchResults, hasNextPage] = await search(null, gPage, true, gType, gSavedAnimes);
+                    }
+                } else {
+                    // Check if we can reuse the old search result
+                    if (!(gQuery === newQuery && gPage === newPage && gType === newType && gTopSearch === newTopSearch)) {
+                        gQuery = newQuery;
+                        gPage = newPage;
+                        gType = newType;
+                        gTopSearch = newTopSearch;
+                        if (gQuery) {
+                            [gSearchResults, hasNextPage] = await search(gQuery, gPage, false, gType, gSavedAnimes);
+                        } else
+                            gSearchResults = [];
+                    }
                 }
-            } else {
-                // Check if we can reuse the old search result
-                if (!(gQuery === newQuery && gPage === newPage && gType === newType && gTopSearch === newTopSearch)) {
-                    gQuery = newQuery;
-                    gPage = newPage;
-                    gType = newType;
-                    gTopSearch = newTopSearch;
-                    if (gQuery) {
-                        [gSearchResults, hasNextPage] = await search(gQuery, gPage, false, gType, gSavedAnimes);
-                    } else
-                        gSearchResults = [];
-                }
-            }
-            showSearchResults(gSearchResults);
-            break;
-        case 1: // Saved tab
-            showSaved(gSavedAnimes);
-            break;
-        case 2: // Single tab
-            if (params.has(URL_PARAM_ANIME_ID)) {
-                const id = +params.get(URL_PARAM_ANIME_ID);
-                // Check if we already have the anime
-                let anime = gSavedAnimes.find(a => a.id === id);
-                if (!anime && gSearchResults)
-                    anime = gSearchResults.find(a => a.id === id);
-                if (!anime)
-                    anime = await fetchAnime(id);
-                showSingle(anime);
-            } else {
-                gTab = 1;
+                showSearchResults(gSearchResults);
+                break;
+            case 1: // Saved tab
                 showSaved(gSavedAnimes);
-            }
-            break;
+                break;
+            case 2: // Single tab
+                if (params.has(URL_PARAM_ANIME_ID)) {
+                    const id = +params.get(URL_PARAM_ANIME_ID);
+                    // Check if we already have the anime
+                    let anime = gSavedAnimes.find(a => a.id === id);
+                    if (!anime && gSearchResults)
+                        anime = gSearchResults.find(a => a.id === id);
+                    if (!anime)
+                        anime = await fetchAnime(id);
+                    showSingle(anime);
+                } else {
+                    gTab = 1;
+                    showSaved(gSavedAnimes);
+                }
+                break;
+        }
+        document.title = TITLES[gTab];
+        showHideElements(gTab);
+        checkTopSearch();
+        checkNextPrev(e.state ? e.state.hasNextPage : hasNextPage, gPage);
     }
-    document.title = TITLES[gTab];
-    showHideElements(gTab);
-    checkTopSearch();
-    checkNextPrev(e.state ? e.state.hasNextPage : hasNextPage, gPage);
+    catch (err) {
+        showError(ERR_API);
+    }
 }
 async function onTest(e) {
     // Adds two animes to the saved list (from a list of 21)
@@ -376,7 +456,6 @@ async function search(query, page, topSearch, type, savedAnimes) {
     const json = topSearch ?
         await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`) :
         await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&type=${type}&page=${page}`);
-    console.log(json);
     const animes = [];
     for (const ja of json.data) {
         let a = new Anime(
@@ -423,7 +502,7 @@ async function fetchAnime(id) {
         res = savedanime;
     return res;
 }
-async function showSearchResults(animes) {
+function showSearchResults(animes) {
     // Renders the animes in the search tab
     hMain.innerHTML = ""; // clear the container
     const hCards = document.createElement("div");
@@ -738,6 +817,9 @@ function createGenreDivs(anime) {
     }
     return hGenres;
 }
+function showError(errormsg) {
+    hMain.innerHTML = "<div id='errormsg'>" + errormsg + "</div>";
+}
 function showHideElements(tab) {
     hTxtQuery.hidden = tab !== 0;
     hBtnSearch.hidden = tab !== 0;
@@ -827,7 +909,7 @@ function pushStateSaved() {
     url.search = params.toString();
     pushState(url, TITLES[1]);
 }
-function pushStateSingle({id, title_en}) {
+function pushStateSingle({ id, title_en }) {
     // Adds a history state for the details tab
     const url = new URL(window.location.href);
     const params = new URLSearchParams();
