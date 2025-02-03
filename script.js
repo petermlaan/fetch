@@ -68,14 +68,16 @@ document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
+// #region ----- Startup code           ----- 
 try {
     window.history.scrollRestoration = "auto";
-    gSavedAnimes = loadSavedAnimes();
+    gSavedAnimes = loadSavedAnimes(); 
 }
 catch (err) {
     showError(ERR_GENERIC);
 }
 onWindowPopstate({}); // Parse the current url
+// #endregion
 
 // #region ----- Event listeners        ----- 
 function onSearchTab(e) {
@@ -394,11 +396,11 @@ async function onWindowPopstate(e) {
                             gSearchResults = [];
                     }
                 }
-                setTitle(gTab, "");
+                setTitle(gTab);
                 showSearchResults(gSearchResults);
                 break;
             case 1: // Saved tab
-                setTitle(gTab, "");
+                setTitle(gTab);
                 showSaved(gSavedAnimes);
                 break;
             case 2: // Single tab
@@ -828,7 +830,7 @@ function setTitleSingle(tab, { title_en }) {
     setTitle(tab, title_en);
 }
 function setTitle(tab, titleEnd) {
-    document.title = TITLES[tab] + titleEnd;
+    document.title = TITLES[tab] + (titleEnd ? titleEnd : "");
 }
 function showError(errormsg) {
     hMain.innerHTML = "<div id='errormsg'>" + errormsg + "</div>";
