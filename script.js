@@ -68,8 +68,13 @@ document.querySelector("#mnuCards").addEventListener("click", onSavedTab);
 window.addEventListener("popstate", onWindowPopstate);
 // #endregion
 
-window.history.scrollRestoration = "auto";
-gSavedAnimes = loadSavedAnimes();
+try {
+    window.history.scrollRestoration = "auto";
+    gSavedAnimes = loadSavedAnimes();
+}
+catch (err) {
+    showError(ERR_GENERIC);
+}
 onWindowPopstate({}); // Parse the current url
 
 // #region ----- Event listeners        ----- 
@@ -389,9 +394,11 @@ async function onWindowPopstate(e) {
                             gSearchResults = [];
                     }
                 }
+                setTitle(gTab, "");
                 showSearchResults(gSearchResults);
                 break;
             case 1: // Saved tab
+                setTitle(gTab, "");
                 showSaved(gSavedAnimes);
                 break;
             case 2: // Single tab
@@ -403,6 +410,7 @@ async function onWindowPopstate(e) {
                         anime = gSearchResults.find(a => a.id === id);
                     if (!anime)
                         anime = await fetchAnime(id);
+                    setTitleSingle(gTab, anime);
                     showSingle(anime);
                 } else {
                     gTab = 1;
@@ -410,7 +418,6 @@ async function onWindowPopstate(e) {
                 }
                 break;
         }
-        document.title = TITLES[gTab];
         showHideElements(gTab);
         checkTopSearch();
         checkNextPrev(e.state ? e.state.hasNextPage : hasNextPage, gPage);
@@ -816,6 +823,12 @@ function createGenreDivs(anime) {
         hGenres.appendChild(hGenre);
     }
     return hGenres;
+}
+function setTitleSingle(tab, { title_en }) {
+    setTitle(tab, title_en);
+}
+function setTitle(tab, titleEnd) {
+    document.title = TITLES[tab] + titleEnd;
 }
 function showError(errormsg) {
     hMain.innerHTML = "<div id='errormsg'>" + errormsg + "</div>";
