@@ -6,9 +6,9 @@ const API_URL_ANIME = "anime/"; // fetch a single anime by id
 const API_URL_SEARCH = "anime?sfw&q="; // add query and page=x
 const API_URL_SEARCH_TOP = "top/anime?sfw&type="; // add type and page=x
 const LS_MODEL = "model"; // local storage key
-const TITLES = [" - Sök", "", " - "].map(t => "Mina Anime" + t);
+const TITLES = [" - Sök", "", " - "].map(t => "Mina Anime" + t); // Page titles for the tabs
 
-// Felmeddelanden
+// Error messages
 const ERR_API = "Vi har för tillfället problem med vår animedatabas. Försök igen senare!";
 const ERR_GENERIC = "Någonting gick fel. Försök igen senare!";
 
