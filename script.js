@@ -71,7 +71,7 @@ window.addEventListener("popstate", onWindowPopstate);
 // #region ----- Startup code           ----- 
 try {
     window.history.scrollRestoration = "auto";
-    gSavedAnimes = loadSavedAnimes(); 
+    gSavedAnimes = loadSavedAnimes();
 }
 catch (err) {
     showError(ERR_GENERIC);
@@ -164,17 +164,15 @@ async function onBtnNextPage(e) {
     // Show the next page of the search results.
     try {
         e.preventDefault();
-        if (gQuery || hChkTopSearch.checked) {
-            gPage++;
-            let hasNextPage = false;
-            [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
-            showSearchResults(gSearchResults);
-            checkNextPrev(hasNextPage, gPage);
-            if (hChkTopSearch.checked)
-                pushStateSearchTop(hSelType.value, gPage, hasNextPage);
-            else
-                pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
-        }
+        gPage++;
+        let hasNextPage = false;
+        [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
+        showSearchResults(gSearchResults);
+        checkNextPrev(hasNextPage, gPage);
+        if (hChkTopSearch.checked)
+            pushStateSearchTop(hSelType.value, gPage, hasNextPage);
+        else
+            pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
     }
     catch (err) {
         showError(ERR_API);
@@ -184,7 +182,7 @@ async function onBtnPrevPage(e) {
     // Show the previous page of the search results.
     try {
         e.preventDefault();
-        if (gPage > 1 && (gQuery || hChkTopSearch.checked)) {
+        if (gPage > 1) {
             gPage--;
             let hasNextPage = false;
             [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
