@@ -188,7 +188,6 @@ async function onBtnPrevPage(e) {
             gPage--;
             let hasNextPage = false;
             [gSearchResults, hasNextPage] = await search(gQuery, gPage, hChkTopSearch.checked, hSelType.value, gSavedAnimes);
-            throw new Error("ett fel har felat!");
             showSearchResults(gSearchResults);
             checkNextPrev(hasNextPage, gPage);
             if (hChkTopSearch.checked)
