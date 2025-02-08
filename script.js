@@ -72,11 +72,11 @@ window.addEventListener("popstate", onWindowPopstate);
 try {
     window.history.scrollRestoration = "auto";
     gSavedAnimes = loadSavedAnimes();
+    onWindowPopstate({}); // Parse the current url
 }
 catch (err) {
-    showError(ERR_GENERIC);
+    showError(err);
 }
-onWindowPopstate({}); // Parse the current url
 // #endregion
 
 // #region ----- Event listeners        ----- 
@@ -96,7 +96,7 @@ function onSearchTab(e) {
         showSearchResults(gSearchResults); // Show the old search results, if any
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onSavedTab(e) {
@@ -112,7 +112,7 @@ function onSavedTab(e) {
         showSaved(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onSingleTab(e) {
@@ -129,7 +129,7 @@ function onSingleTab(e) {
         showSingle(anime);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 async function onBtnSearch(e) {
@@ -157,7 +157,7 @@ async function onBtnSearch(e) {
         showSearchResults(gSearchResults);
     }
     catch (err) {
-        showError(ERR_API);
+        showError(err);
     }
 }
 async function onBtnNextPage(e) {
@@ -175,7 +175,7 @@ async function onBtnNextPage(e) {
             pushStateSearch(gQuery, gPage, hSelType.value, hasNextPage);
     }
     catch (err) {
-        showError(ERR_API);
+        showError(err);
     }
 }
 async function onBtnPrevPage(e) {
@@ -195,7 +195,7 @@ async function onBtnPrevPage(e) {
         }
     }
     catch (err) {
-        showError(ERR_API);
+        showError(err);
     }
 }
 function onChkShowList(e) {
@@ -207,7 +207,7 @@ function onChkShowList(e) {
             showSaved(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onChkTopSearch(e) {
@@ -216,7 +216,7 @@ function onChkTopSearch(e) {
         checkTopSearch();
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onChkFilterWatched(e) {
@@ -225,7 +225,7 @@ function onChkFilterWatched(e) {
         showSaved(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onBtnSave(e) {
@@ -251,7 +251,7 @@ function onBtnSave(e) {
         }
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onBtnRemove(e) {
@@ -263,7 +263,7 @@ function onBtnRemove(e) {
         showSaved(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onBtnClose(e) {
@@ -272,7 +272,7 @@ function onBtnClose(e) {
         history.back();
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onChkWatched(e) {
@@ -282,7 +282,7 @@ function onChkWatched(e) {
         storeSavedAnimes(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onSelRating(e) {
@@ -293,7 +293,7 @@ function onSelRating(e) {
         storeSavedAnimes(gSavedAnimes);
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 function onHeaderRow(e) {
@@ -354,7 +354,7 @@ function onHeaderRow(e) {
         }
     }
     catch (err) {
-        showError(ERR_GENERIC);
+        showError(err);
     }
 }
 async function onWindowPopstate(e) {
@@ -422,7 +422,7 @@ async function onWindowPopstate(e) {
         checkNextPrev(e.state ? e.state.hasNextPage : hasNextPage, gPage);
     }
     catch (err) {
-        showError(ERR_API);
+        showError(err);
     }
 }
 async function onTest(e) {
@@ -827,10 +827,11 @@ function setTitleSingle(tab, { title_en }) {
     setTitle(tab, title_en);
 }
 function setTitle(tab, titleEnd) {
-    document.title = TITLES[tab] + (titleEnd ? titleEnd : "");
+    document.title = TITLES[tab] + (titleEnd ?? "");
 }
-function showError(errormsg) {
-    hMain.innerHTML = "<div id='errormsg'>" + errormsg + "</div>";
+function showError(err) {
+    console.log(err);
+    hMain.innerHTML = `<div id='errormsg'>${err.name}: ${err.message} Stack: ${err.stack}</div>`;
 }
 function showHideElements(tab) {
     hTxtQuery.hidden = tab !== 0;
