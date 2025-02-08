@@ -1,4 +1,4 @@
-import { fetchJSON, getParamBool, getParamNumber, getParamString } from "./util.js";
+import { fetchJSON, getParamBool, getParamNumber, getParamString, type } from "./util.js";
 
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -831,7 +831,13 @@ function setTitle(tab, titleEnd) {
 }
 function showError(err) {
     console.log(err);
-    hMain.innerHTML = `<div id='errormsg'>${err.name}: ${err.message} Stack: ${err.stack}</div>`;
+    hMain.innerHTML = `
+    <p id='errormsg'>${err.name}: ${err.message}</p>
+    <p id='errormsg'>Stack: ${err.stack}</p>
+    <p id='errormsg'>Type gSavedAnimes: ${type(gSavedAnimes)}</p>
+    <p id='errormsg'>gSavedAnimes: ${gSavedAnimes}</p>
+    <p id='errormsg'>gTab: ${gTab}</p>
+    `;
 }
 function showHideElements(tab) {
     hTxtQuery.hidden = tab !== 0;
@@ -877,13 +883,10 @@ function checkTopSearch() {
     }
 }
 function loadSavedAnimes() {
-    // Loads saved animes from local storage and returns them.
-    let res = [];
+    // Returns saved animes in local storage.
     const m = localStorage.getItem(LS_MODEL);
-    res = m ? JSON.parse(m) : [];
-    if (!res)
-        res = [];
-    return res;
+    let res =  m ? JSON.parse(m) : [];
+    return res ?? [];
 }
 function storeSavedAnimes(animes) {
     // Stores the animes in local storage
