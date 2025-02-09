@@ -42,3 +42,12 @@ export function type(value) {
     }
     return baseType;
 }
+
+export function createElement(parent, element, text, classes) {
+    const e = document.createElement(element);
+    e.textContent = text;
+    if (classes)
+        e.className = classes;
+    parent.appendChild(e);
+    return e;
+}

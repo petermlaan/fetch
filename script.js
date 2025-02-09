@@ -1,4 +1,4 @@
-import { fetchJSON, getParamBool, getParamNumber, getParamString, type } from "./util.js";
+import { createElement, fetchJSON, getParamBool, getParamNumber, getParamString, type } from "./util.js";
 
 // #region ----- Gobal constants        ..... 
 const API_URL_BASE = "https://api.jikan.moe/v4/";
@@ -462,22 +462,10 @@ async function search(query, page, topSearch, type, savedAnimes) {
     const json = topSearch ?
         await fetchJSON(API_URL_BASE + API_URL_SEARCH_TOP + `${type}&page=${page}`) :
         await fetchJSON(API_URL_BASE + API_URL_SEARCH + `${query}&type=${type}&page=${page}`);
+    console.log(json.data);
     const animes = [];
     for (const ja of json.data) {
-        let a = new Anime(
-            ja.mal_id,
-            ja.title,
-            ja.title_english,
-            ja.images.jpg.thumbnail_image_url,
-            ja.images.jpg.small_image_url,
-            ja.images.jpg.large_image_url,
-            ja.synopsis,
-            ja.genres,
-            ja.score,
-            false,
-            false,
-            0
-        );
+        let a = createAnime(ja);
         const savedanime = savedAnimes.find(b => b.id === a.id);
         if (savedanime)
             a = savedanime;
@@ -488,21 +476,8 @@ async function search(query, page, topSearch, type, savedAnimes) {
 async function fetchAnime(id) {
     // Fetches anime info from the API and returns an anime object.
     const json = await fetchJSON(API_URL_BASE + API_URL_ANIME + id);
-    const ja = json.data;
-    const res = new Anime(
-        ja.mal_id,
-        ja.title,
-        ja.title_english,
-        ja.images.jpg.thumbnail_image_url,
-        ja.images.jpg.small_image_url,
-        ja.images.jpg.large_image_url,
-        ja.synopsis,
-        ja.genres,
-        ja.score,
-        false,
-        false,
-        0
-    );
+    console.log(json.data);
+    const res = createAnime(json.data);
     const savedanime = gSavedAnimes.find(b => b.id === res.id);
     if (savedanime) // return the saved version if possible
         res = savedanime;
@@ -574,12 +549,8 @@ function showSingle(anime) {
     // #region Left top row
     const hLeftTopRow = document.createElement("div");
     hLeftTopRow.classList.add("single-left-toprow");
-    // #region Close button
-    const hClose = document.createElement("button");
-    hClose.innerText = "Stäng";
-    hClose.addEventListener("click", onBtnClose);
-    hLeftTopRow.appendChild(hClose);
-    // #endregion
+    createElement(hLeftTopRow, "button", "Stäng")
+        .addEventListener("click", onBtnClose);
     // #region Save button
     const hSave = document.createElement("button");
     hSave.innerText = anime.saved ? "Ta bort" : "Spara";
@@ -589,10 +560,8 @@ function showSingle(anime) {
     // #endregion
     // #region Watched
     if (anime.saved) {
-        const hWatchedLabel = document.createElement("label");
-        hWatchedLabel.innerText = "Sedd";
-        hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
-        hLeftTopRow.appendChild(hWatchedLabel);
+        createElement(hLeftTopRow, "label", "Sedd")
+            .htmlFor = `chkWatched${anime.id}`;
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
         hWatched.id = `chkWatched${anime.id}`;
@@ -613,7 +582,7 @@ function showSingle(anime) {
     // #endregion
 
     // #region Genres
-    const hGenres = createGenreDivs(anime);
+    const hGenres = createGenreDiv(anime);
     hLeft.appendChild(hGenres);
     // #endregion
 
@@ -623,40 +592,21 @@ function showSingle(anime) {
     // #region Right part
     const hRight = document.createElement("div");
 
-    // #region Top row
     const hRightTopRow = document.createElement("div");
     hRightTopRow.classList.add("single-right-toprow");
-    const hScore = document.createElement("span");
-    hScore.innerText = "Poäng: " + (anime.score ? anime.score.toFixed(1) : "");
-    hRightTopRow.appendChild(hScore);
+    createElement(hRightTopRow, "span", "Poäng: " + (anime.score ? anime.score.toFixed(1) : ""))
     if (anime.saved) {
-        const hRatingLbl = document.createElement("label");
-        hRatingLbl.htmlFor = "rating";
-        hRatingLbl.innerText = "Betyg: ";
+        const hRatingLbl = createElement(hRightTopRow, "label", "Betyg: ");
         hRatingLbl.appendChild(createRatingSelect(anime));
-        hRightTopRow.appendChild(hRatingLbl);
+        hRatingLbl.htmlFor = "rating";
     }
     hRight.appendChild(hRightTopRow);
-    // #endregion
 
-    // #region Title english
-    const hTitleEn = document.createElement("h2");
-    hTitleEn.innerText = anime.title_en;
-    hRight.appendChild(hTitleEn);
-    // #endregion
-
-    // #region Title
-    const hTitle = document.createElement("h3");
-    hTitle.innerText = anime.title;
-    hRight.appendChild(hTitle);
-    // #endregion
-
-    // #region Synopsis
-    const hSynopsis = document.createElement("p");
-    hSynopsis.innerText = anime.synopsis;
-    hRight.appendChild(hSynopsis);
-    // #endregion
-
+    createElement(hRight, "h2", anime.title_en);
+    createElement(hRight, "h3", anime.title);
+    createElement(hRight, "p", `Från: ${anime.aired} --- Källa: ${anime.source} --- Typ: ${anime.type}`);
+    createElement(hRight, "p", anime.synopsis);
+    createElement(hRight, "p", anime.background);
     hCard.appendChild(hRight);
     // #endregion
 
@@ -683,19 +633,13 @@ function createCard(anime, tab) {
     hTopRow.appendChild(hSave);
     // #endregion
 
-    // #region Score
-    const hScore = document.createElement("span");
-    hScore.innerText = "Poäng: " + (anime.score ? anime.score.toFixed(1) : "");
-    hTopRow.appendChild(hScore);
-    // #endregion
+    createElement(hTopRow, "span", "Poäng: " + (anime.score ? anime.score.toFixed(1) : ""));
 
     // #region Watched
-    const hWatchedLabel = document.createElement("label");
-    hWatchedLabel.innerText = "Sedd";
+    const hWatchedLabel = createElement(hTopRow, "label", "Sedd");
     hWatchedLabel.htmlFor = `chkWatched${anime.id}`;
     if (tab === 0)
         hWatchedLabel.style.visibility = "hidden";
-    hTopRow.appendChild(hWatchedLabel);
     const hWatched = document.createElement("input");
     hWatched.type = "checkbox";
     hWatched.id = `chkWatched${anime.id}`;
@@ -734,7 +678,7 @@ function createCard(anime, tab) {
     // #endregion
 
     // #region Genres
-    const hGenres = createGenreDivs(anime);
+    const hGenres = createGenreDiv(anime);
     hCard.appendChild(hGenres);
     // #endregion
 
@@ -747,38 +691,28 @@ function createRow(anime, tab) {
     hRow.anime = anime; // Store anime object for use in event handlers
 
     // #region Save / unsave button
-    const hSave = document.createElement("button");
-    hSave.innerText = tab === 1 ? "Ta bort" : "Spara";
+    const hSave = createElement(hRow, "button", tab === 1 ? "Ta bort" : "Spara");
     hSave.addEventListener("click", anime.saved ? onBtnRemove : onBtnSave);
     hSave.anime = anime; // Store anime object for use in event handler
     if (tab === 0 && anime.saved) {
         hSave.disabled = true;
         hSave.classList.add("disabled");
     }
-    hRow.appendChild(hSave);
     // #endregion
     // #region Watched
     if (tab === 1) {
         const hWatched = document.createElement("input");
         hWatched.type = "checkbox";
-        //hWatched.id = `chkWatched${anime.id}`;
         hWatched.checked = anime.watched;
         hWatched.addEventListener("click", onChkWatched);
         hWatched.anime = anime; // Store anime object for use in event handler
         hRow.appendChild(hWatched);
     }
     // #endregion
-    // #region Score
-    const hScore = document.createElement("span");
-    hScore.innerText = anime.score ? anime.score.toFixed(1) : "";
-    hScore.classList.add("center");
-    hRow.appendChild(hScore);
-    // #endregion
-    // #region My rating
-    if (tab === 1) {
+    createElement(hRow, "span", anime.score?.toFixed(1) ?? "")
+        .classList.add("center");
+    if (tab === 1)
         hRow.appendChild(createRatingSelect(anime));
-    }
-    // #endregion
     // #region Title
     const hTitleDiv = document.createElement("div");
     const hTitleEn = document.createElement("a");
@@ -811,16 +745,12 @@ function createRatingSelect(anime) {
     hRating.selectedIndex = anime.myRating;
     return hRating;
 }
-function createGenreDivs(anime) {
+function createGenreDiv(anime) {
     // Returns a div element with all genres
     const hGenres = document.createElement("div");
     hGenres.classList.add("card-genres");
-    for (const genre of anime.genres) {
-        const hGenre = document.createElement("div");
-        hGenre.classList.add("card-genre");
-        hGenre.innerText = genre.name;
-        hGenres.appendChild(hGenre);
-    }
+    for (const genre of anime.genres)
+        createElement(hGenres, "div", genre.name, "card-genre");
     return hGenres;
 }
 function setTitleSingle(tab, { title_en }) {
@@ -884,7 +814,7 @@ function loadSavedAnimes() {
     if (!localStorage)
         throw new Error("Local storage is unavailable. Please activate it in your browser.");
     const m = localStorage.getItem(LS_MODEL);
-    let res =  m ? JSON.parse(m) : [];
+    let res = m ? JSON.parse(m) : [];
     if (type(res) !== "Array")
         res = [];
     return res ?? [];
@@ -940,13 +870,33 @@ function pushState(url, title, state) {
     document.title = title;
     window.history.pushState(state, title, url);
 }
+function createAnime(jsonAnime) {
+    return new Anime(
+        jsonAnime.mal_id,
+        jsonAnime.title,
+        jsonAnime.title_english,
+        jsonAnime.images.jpg.thumbnail_image_url,
+        jsonAnime.images.jpg.small_image_url,
+        jsonAnime.images.jpg.large_image_url,
+        jsonAnime.synopsis,
+        jsonAnime.background,
+        jsonAnime.aired.from,
+        jsonAnime.genres,
+        jsonAnime.source,
+        jsonAnime.type,
+        jsonAnime.score,
+        false,
+        false,
+        0,
+    );
+}
 // #endregion
 
 // #region ----- Classes                ----- 
 class Anime {
     constructor(
         id, title, title_en, poster_s1, poster_s2, poster_s3,
-        synopsis, genres, score, saved, watched, myRating) {
+        synopsis, background, aired, genres, source, type, score, saved, watched, myRating) {
 
         this.id = id;
         this.title = title ? title : title_en;
@@ -954,9 +904,13 @@ class Anime {
         this.poster_s1 = poster_s1;
         this.poster_s2 = poster_s2;
         this.poster_s3 = poster_s3;
-        this.synopsis = synopsis;
+        this.synopsis = synopsis ?? "";
+        this.background = background ?? "";
+        this.aired = aired ? (new Date(aired)).toLocaleDateString("se-sv") : "";
         this.genres = genres;
-        this.score = score;
+        this.source = source;
+        this.type = type;
+        this.score = score ?? 0;
         this.saved = saved;
         this.watched = watched;
         this.myRating = myRating;
