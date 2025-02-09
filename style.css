@@ -189,9 +189,8 @@ header {
 
 #errormsg {
     color: #faa;
-    font-size: x-large;
-    text-align: center;
-    margin-top: 5rem;
+    font-size: larger;
+    margin-top: 3rem;
 }
 
 .anime-card {

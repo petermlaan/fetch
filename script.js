@@ -831,13 +831,10 @@ function setTitle(tab, titleEnd) {
 }
 function showError(err) {
     console.log(err);
-    hMain.innerHTML = `
-    <p id='errormsg'>${err.name}: ${err.message}</p>
-    <p id='errormsg'>Stack: ${err.stack}</p>
-    <p id='errormsg'>Type gSavedAnimes: ${type(gSavedAnimes)}</p>
-    <p id='errormsg'>gSavedAnimes: ${gSavedAnimes}</p>
-    <p id='errormsg'>gTab: ${gTab}</p>
-    `;
+    hMain.innerHTML = `<div id='errormsg'>
+    <p>${err.name}: ${err.message}</p>
+    <p>Stack: ${err.stack}</p>
+    </div>`;
 }
 function showHideElements(tab) {
     hTxtQuery.hidden = tab !== 0;
@@ -883,9 +880,13 @@ function checkTopSearch() {
     }
 }
 function loadSavedAnimes() {
-    // Returns saved animes in local storage.
+    // Returns saved animes from local storage.
+    if (!localStorage)
+        throw new Error("Local storage is unavailable. Please activate it in your browser.");
     const m = localStorage.getItem(LS_MODEL);
     let res =  m ? JSON.parse(m) : [];
+    if (type(res) !== "Array")
+        res = [];
     return res ?? [];
 }
 function storeSavedAnimes(animes) {
