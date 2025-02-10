@@ -83,7 +83,6 @@ body {
 header {
     background-color: var(--clr-main0);
     margin-bottom: 10px;
-/*    height: 60px;*/
     display: flex;
     flex-wrap: wrap;
 
@@ -157,12 +156,12 @@ header {
 }
 
 #cMain {
-    margin: 1rem;
+    margin: 0.4rem;
 }
 
 #cCards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 320px);
+    grid-template-columns: repeat(auto-fit, 260px);
     justify-content: center;
     gap: 1rem;
     margin-top: 1rem;
@@ -218,8 +217,8 @@ header {
     }
 
     .poster {
-        width: 300px;
-        height: 450px;
+        width: 240px;
+        height: 360px;
         object-fit: cover;
 
         &:hover {
@@ -258,8 +257,8 @@ header {
         }
 
         .poster {
-            width: 300px;
-            height: 450px;
+            width: 240px;
+            height: 360px;
             object-fit: cover;
         }
     }
