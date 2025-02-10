@@ -83,7 +83,9 @@ body {
 header {
     background-color: var(--clr-main0);
     margin-bottom: 10px;
-    height: 60px;
+/*    height: 60px;*/
+    display: flex;
+    flex-wrap: wrap;
 
     h1 {
         color: var(--clr-main4);
@@ -95,14 +97,15 @@ header {
         vertical-align: middle;
 
         @media (width < 25rem) {
-            display: none;
+            position: static;
         }
     }
 
     #topmenu {
         display: grid;
         justify-content: center;
-        height: 100%;
+        height: 60px;
+        flex: 1;
 
         ul {
             display: flex;
