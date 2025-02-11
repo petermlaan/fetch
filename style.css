@@ -288,6 +288,7 @@ header {
 .card-genres {
     display: flex;
     flex-wrap: wrap;
+    align-content: start;
     gap: 0.4rem;
 
     .card-genre {

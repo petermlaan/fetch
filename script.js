@@ -577,7 +577,7 @@ function showSingle(anime) {
     // #endregion
 
     // Genres
-    const hGenres = createGenreDiv(anime);
+    const hGenres = createGenresDiv(anime);
     hLeft.appendChild(hGenres);
 
     hCard.appendChild(hLeft);
@@ -670,7 +670,7 @@ function createCard(anime, tab) {
     // #endregion
 
     // #region Genres
-    const hGenres = createGenreDiv(anime);
+    const hGenres = createGenresDiv(anime);
     hCard.appendChild(hGenres);
     // #endregion
 
@@ -738,7 +738,7 @@ function createRatingSelect(anime) {
     hRating.selectedIndex = anime.myRating;
     return hRating;
 }
-function createGenreDiv(anime) {
+function createGenresDiv(anime) {
     // Returns a div element with all genres
     const hGenres = document.createElement("div");
     hGenres.classList.add("card-genres");
